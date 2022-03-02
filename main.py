@@ -24,15 +24,15 @@ logo.place(x = 675, y = 10)
 logo.config(width=200, height = 200)
 
 #buttons
-Play = Button(root, height = 5, width = 20, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
+Play = Button(root, height = 5, width = 20, highlightbackground = "green", text = "Play", command=lambda: play_click(Play)) #makes button
 Play.pack()
 Play.place(x = 675, y = 100)
 
-Pause = Button(root, height = 5, width = 20, bg = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
+Pause = Button(root, height = 5, width = 20, highlightbackground = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
 Pause.pack()
 Pause.place(x = 675, y = 190)
 
-Stop = Button(root, height = 5, width = 20, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
+Stop = Button(root, height = 5, width = 20, highlightbackground = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
 Stop.place(x = 675, y = 280)
 
