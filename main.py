@@ -1,16 +1,27 @@
+from pickletools import read_string1
 import random
+import serial
+import datetime
+
 
 from tkinter import *
 from tkinter import messagebox
 
+#to do:
+#control COM
+#control sensordelay
+#time
+#log of everything
+#maybe add diagram for fun
+
+
 #set up frame
 
 root = Tk()
-root.title('Flow Loop Testing')
+root.title('Flow Loop Testing Interface')
 root.resizable(0, 0)
-myCanvas = Canvas(root, width = 900, height = 700, bg = "White")
+myCanvas = Canvas(root, width = 900, height = 600, bg = "White")
 myCanvas.pack()
-
 
 #logo
 fileName = "Benchmark.gif"
@@ -24,32 +35,76 @@ logo.place(x = 675, y = 10)
 logo.config(width=200, height = 200)
 
 #buttons
-Play = Button(root, height = 5, width = 20, highlightbackground = "green", text = "Play", command=lambda: play_click(Play)) #makes button
+Play = Button(root, height = 5, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
 Play.pack()
 Play.place(x = 675, y = 100)
 
-Pause = Button(root, height = 5, width = 20, highlightbackground = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
+Pause = Button(root, height = 5, width = 28, bg = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
 Pause.pack()
 Pause.place(x = 675, y = 190)
 
-Stop = Button(root, height = 5, width = 20, highlightbackground = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
+Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
 Stop.place(x = 675, y = 280)
 
+#arduino setup 
+arduino_port = "COM3"  # serial port of Arduino
+baud = 9600  # arduino uno runs at 9600 baud
+fileName = "analog-data.csv"  # name of the CSV file generated
+
+ser = serial.Serial(arduino_port, baud)
+print("Connected to Arduino port:" + arduino_port)
+file = open(fileName, "a")
+print("Created file")
+global reading
+reading = False
+global Start
+Start = True
+global newStart
+newStart = False
 
 def play_click(b): #when button clicked
-    return
+    global reading
+    reading = True
+        
 def pause_click(b): #when button clicked
-    return
+    global reading
+    reading = False
+
 def stop_click(b): #when button clicked
-    return
+    global reading
+    reading = False
+    global newStart
+    newStart = True
     
+def read():
+    global reading
+    if reading:
+        getData = str(ser.readline())
+        data = getData[2:-5]
+
+        file = open(fileName, "a")
+        global Start
+        global newStart
+        if Start:
+            file.write("Time,"+data + "\n")  # write data with a newline
+            print("Time,"+data + "\n")
+            Start = False
+        elif newStart:
+            file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
+            print("Time,PressureIn,PressureOut,PressureDifference\n")
+            newStart = False
+        else:
+            file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
+            print(str(datetime.datetime.now())+","+ data + "\n")
+
+    root.after(1000, read)
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
 
-
-
+root.after(1000, read)
 
 root.mainloop()
+
 
