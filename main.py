@@ -1,3 +1,4 @@
+from lib2to3.pgen2.token import RIGHTSHIFT, RIGHTSHIFTEQUAL
 from pickletools import read_string1
 import random
 import serial
@@ -8,9 +9,8 @@ from tkinter import *
 from tkinter import messagebox
 
 #to do:
-#control COM
-#control sensordelay
-#time
+#control COM? not sure what I meant
+#control sensordelay and recalibration controls
 #log of everything
 #maybe add diagram for fun
 
@@ -30,7 +30,7 @@ pic = PhotoImage(file = fileName)
 
 logo = Label(root, image = pic)
 logo.photo = pic #ensures label doesn't stay blank
-logo.pack()
+#logo.pack()
 logo.place(x = 675, y = 10)
 logo.config(width=200, height = 200)
 
@@ -46,6 +46,19 @@ Pause.place(x = 675, y = 190)
 Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
 Stop.place(x = 675, y = 280)
+
+#log scrollbar
+
+frameScroll = Frame(root)
+frameScroll.place(x = 18, y = 60)
+frameScroll.config(height = 400, width = 900)
+global scroll_bar
+scroll_bar = Scrollbar(frameScroll)
+global myLog
+myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 20))
+myLog.pack( side = LEFT, fill = X, expand= True )
+scroll_bar.pack( side = RIGHT, fill = Y, expand= True)
+scroll_bar.config(command = myLog.yview)
 
 #arduino setup 
 arduino_port = "COM3"  # serial port of Arduino
@@ -97,6 +110,15 @@ def read():
         else:
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
+
+            global myLog
+            myLog.insert(END, str(datetime.datetime.now())+","+ data)
+            global scroll_bar
+            scroll_bar.config(command = myLog.yview)
+            myLog.yview(END)
+
+    labelTime = Label(root, text = str(datetime.datetime.now()), font = ("Verdana", 20))
+    labelTime.place(x = 100, y = 10)
 
     root.after(1000, read)
 
