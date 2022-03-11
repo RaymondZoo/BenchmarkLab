@@ -9,9 +9,8 @@ from tkinter import *
 from tkinter import messagebox
 
 #to do:
-#control COM? not sure what I meant
+#control COM, user inputs which com
 #control sensordelay and recalibration controls
-#log of everything
 #maybe add diagram for fun
 
 
@@ -47,17 +46,25 @@ Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=l
 Stop.pack()
 Stop.place(x = 675, y = 280)
 
+Autoscrollvar = IntVar()
+
+Autoscroll = Checkbutton(root, height = 2, width = 10, text = "Autoscroll", variable = Autoscrollvar, onvalue = 1, offvalue = 0) #makes button
+Autoscroll.place(x = 530, y = 325)
+
+Autoscroll.select()
+
 #log scrollbar
 
 frameScroll = Frame(root)
 frameScroll.place(x = 18, y = 60)
-frameScroll.config(height = 400, width = 900)
+frameScroll.config(height = 10, width = 10)
 global scroll_bar
 scroll_bar = Scrollbar(frameScroll)
 global myLog
-myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 20))
-myLog.pack( side = LEFT, fill = X, expand= True )
+myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 15), width= 45, height= 10)
+myLog.pack( side = LEFT, fill = BOTH, expand= True )
 scroll_bar.pack( side = RIGHT, fill = Y, expand= True)
+#myLog.place(x = 0, y= 0)
 scroll_bar.config(command = myLog.yview)
 
 #arduino setup 
@@ -71,10 +78,8 @@ file = open(fileName, "a")
 print("Created file")
 global reading
 reading = False
-global Start
-Start = True
 global newStart
-newStart = False
+newStart = True
 
 def play_click(b): #when button clicked
     global reading
@@ -97,27 +102,28 @@ def read():
         data = getData[2:-5]
 
         file = open(fileName, "a")
-        global Start
         global newStart
-        if Start:
-            file.write("Time,"+data + "\n")  # write data with a newline
-            print("Time,"+data + "\n")
-            Start = False
-        elif newStart:
+        global scroll_bar
+        global myLog
+        if newStart:
             file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
             print("Time,PressureIn,PressureOut,PressureDifference\n")
             newStart = False
+
+            myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
         else:
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
 
-            global myLog
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
-            global scroll_bar
             scroll_bar.config(command = myLog.yview)
-            myLog.yview(END)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
 
-    labelTime = Label(root, text = str(datetime.datetime.now()), font = ("Verdana", 20))
+    labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
     labelTime.place(x = 100, y = 10)
 
     root.after(1000, read)
