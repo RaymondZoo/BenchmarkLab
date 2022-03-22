@@ -11,7 +11,9 @@ from tkinter import messagebox
 #to do:
 #control COM, user inputs which com
 #control sensordelay and recalibration controls
-#maybe add diagram for fun
+
+#backburner:
+#maybe add diagram for fun, ehhhhhhhhhhhhhh, idk about this one tbh
 
 
 #set up frame
