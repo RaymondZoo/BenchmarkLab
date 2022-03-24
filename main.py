@@ -8,12 +8,17 @@ import datetime
 from tkinter import *
 from tkinter import messagebox
 
-#to do:
-#control COM, user inputs which com
-#control sensordelay and recalibration controls
+#to do now:
+#user inputs which COM
+#new file button, user inputs file name, current file name label
+
+#next:
+#control sensordelay and recalibration controls (communication with arduino)
+
 
 #backburner:
 #maybe add diagram for fun, ehhhhhhhhhhhhhh, idk about this one tbh
+#edit exisiting file button, no for now bc idt they need this
 
 
 #set up frame
@@ -23,6 +28,11 @@ root.title('Flow Loop Testing Interface')
 root.resizable(0, 0)
 myCanvas = Canvas(root, width = 900, height = 600, bg = "White")
 myCanvas.pack()
+
+#icon
+ico = PhotoImage(file = "mark.gif")
+root.iconphoto(True, ico) #doesnt change windows python interpreter icon
+#root.iconbitmap(default = "mark.ico")
 
 #logo
 fileName = "Benchmark.gif"
@@ -69,23 +79,23 @@ scroll_bar.pack( side = RIGHT, fill = Y, expand= True)
 #myLog.place(x = 0, y= 0)
 scroll_bar.config(command = myLog.yview)
 
-#arduino setup 
-arduino_port = "COM3"  # serial port of Arduino
-baud = 9600  # arduino uno runs at 9600 baud
-fileName = "analog-data.csv"  # name of the CSV file generated
-
-ser = serial.Serial(arduino_port, baud)
-print("Connected to Arduino port:" + arduino_port)
-file = open(fileName, "a")
-print("Created file")
 global reading
 reading = False
 global newStart
 newStart = True
+global conditions
+conditions = False
 
 def play_click(b): #when button clicked
+    #if COM or file name not set then don't start
     global reading
-    reading = True
+    global inputCOM
+    global fName
+    if conditions == False: 
+        popupwin()
+    else:
+        reading = True
+    #reading = True
         
 def pause_click(b): #when button clicked
     global reading
@@ -96,13 +106,66 @@ def stop_click(b): #when button clicked
     reading = False
     global newStart
     newStart = True
+
+#close the popup window
+def close_win(top):
+    #arduino setup
+    global inputCOM
+    global fName
+    if inputCOM.get() != "" or fName.get() !="": 
+        arduino_port = inputCOM.get()  # serial port of Arduino
+        baud = 9600  # arduino uno runs at 9600 baud
+        fileName = fName.get()  # name of the CSV file generated
+
+        global ser
+        ser = serial.Serial(arduino_port, baud)
+        print("Connected to Arduino port:" + arduino_port)
+        global file
+        file = open(fileName, "w") # w for new file and a for add to existing file
+        print("Created file")
+
+        global conditions
+        conditions = True
+        top.destroy()
+        top.grab_release()
+
+#open the Popup Dialogue
+def popupwin():
+   #Create a Toplevel window
+
+   top= Toplevel(root)
+   top.geometry("750x250")
+
+   top.grab_set()
+
+   #Create an Entry Widget in the Toplevel window
+   lCOM = Label(top, text="COM Port (ex. \"COM5\" or \"COM3\", check this in Device Manager): ")
+   lCOM.place(x = 10, y = 10)
+   global inputCOM
+   inputCOM = Entry(top, width= 25,  font = ("Verdana", 15))
+   inputCOM.place(x = 375, y = 10)
+
+   Lfname = Label(top, text="File Name: ")
+   Lfname.place(x = 10, y = 50)
+   global fName
+   fName = Entry(top, width= 25,  font = ("Verdana", 15))
+   fName.place(x = 375, y = 50)
+   fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
+
+   
+
+   #Create a Button Widget in the Toplevel Window
+   button= Button(top, text="Ok", command=lambda:close_win(top), width = 5)
+   button.place(x = 660, y = 100)
     
 def read():
     global reading
     if reading:
+        global ser
         getData = str(ser.readline())
         data = getData[2:-5]
 
+        global file
         file = open(fileName, "a")
         global newStart
         global scroll_bar
@@ -132,6 +195,8 @@ def read():
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
+
+popupwin()
 
 root.after(1000, read)
 
