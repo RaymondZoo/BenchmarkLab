@@ -90,6 +90,8 @@ global newStart
 newStart = True
 global conditions
 conditions = False
+global COMset 
+COMset = False
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
@@ -123,9 +125,16 @@ def close_win(top):
     global inputCOM
     global fName
     global csvnamed
-    global arduino_port
-    if inputCOM.get() != "" or fName.get() !="": 
-        arduino_port = inputCOM.get()  # serial port of Arduino
+    global arduino_port # serial port of Arduino
+    global COMset
+
+    arduino_port = ""
+    if COMset == True:
+        arduino_port = "pass"
+    else:
+        arduino_port = inputCOM.get()
+
+    if arduino_port != "" and fName.get() !="":
         baud = 9600  # arduino uno runs at 9600 baud
         csvnamed = fName.get()  # name of the CSV file generated
         replace = ""
@@ -137,9 +146,11 @@ def close_win(top):
         print(replace)
 
         if replace == "" or replace == "yes":
-            global ser
-            ser = serial.Serial(arduino_port, baud)
-            print("Connected to Arduino port:" + arduino_port)
+            if COMset == False:
+                global ser
+                ser = serial.Serial(arduino_port, baud)
+                print("Connected to Arduino port:" + arduino_port)
+                COMset = True
             global file
             file = open(fName.get(), "w") # w for new file and a for add to existing file
             print("Created file")
@@ -157,13 +168,16 @@ def popupwin():
    top.geometry("750x250")
 
    top.grab_set()
-
-   #Create an Entry Widget in the Toplevel window
-   lCOM = Label(top, text="COM Port (ex. \"COM5\" or \"COM3\", check this in Device Manager): ")
-   lCOM.place(x = 10, y = 10)
-   global inputCOM
-   inputCOM = Entry(top, width= 25,  font = ("Verdana", 15))
-   inputCOM.place(x = 375, y = 10)
+   global COMset
+   
+   if COMset == False:
+    #Create an Entry Widget in the Toplevel window
+    lCOM = Label(top, text="COM Port (ex. \"COM5\" or \"COM3\", check this in Device Manager): ")
+    lCOM.place(x = 10, y = 10)
+    global inputCOM
+    inputCOM = Entry(top, width= 25,  font = ("Verdana", 15))
+    inputCOM.place(x = 375, y = 10)
+    inputCOM.insert(0, "")
 
    Lfname = Label(top, text="File Name: ")
    Lfname.place(x = 10, y = 50)
