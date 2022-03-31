@@ -3,7 +3,7 @@ from pickletools import read_string1
 import random
 import serial
 import datetime
-
+import os.path
 
 from tkinter import *
 from tkinter import messagebox
@@ -14,6 +14,7 @@ from tkinter import messagebox
 
 #next:
 #control sensordelay and recalibration controls (communication with arduino)
+#have to change sensor delay in here too
 
 
 #backburner:
@@ -37,13 +38,13 @@ root.iconphoto(True, ico) #doesnt change windows python interpreter icon
 #logo
 fileName = "Benchmark.gif"
 pic = PhotoImage(file = fileName)
-#resizedPic = pic.subsample(18, 18)
+resizedPic = pic.subsample(2, 2)
 
-logo = Label(root, image = pic)
-logo.photo = pic #ensures label doesn't stay blank
+logo = Label(root, image = resizedPic)
+logo.photo = resizedPic #ensures label doesn't stay blank
 #logo.pack()
-logo.place(x = 675, y = 10)
-logo.config(width=200, height = 200)
+logo.place(x = 700, y = 10)
+logo.config(width=150, height = 27)
 
 #buttons
 Play = Button(root, height = 5, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
@@ -57,6 +58,10 @@ Pause.place(x = 675, y = 190)
 Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
 Stop.place(x = 675, y = 280)
+
+newFile = Button(root, height = 5, width = 28, bg  ="light blue", text = "New File", command=lambda: new_File(newFile)) #makes button
+newFile.pack()
+newFile.place(x = 675, y = 370)
 
 Autoscrollvar = IntVar()
 
@@ -89,8 +94,6 @@ conditions = False
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
     global reading
-    global inputCOM
-    global fName
     if conditions == False: 
         popupwin()
     else:
@@ -107,27 +110,44 @@ def stop_click(b): #when button clicked
     global newStart
     newStart = True
 
+def new_File(b): #when button clicked
+    global reading
+    if reading == False:
+        popupwin()
+    else:
+        messagebox.showinfo('Warning', 'You must pause or stop the program')
+
 #close the popup window
 def close_win(top):
     #arduino setup
     global inputCOM
     global fName
+    global csvnamed
+    global arduino_port
     if inputCOM.get() != "" or fName.get() !="": 
         arduino_port = inputCOM.get()  # serial port of Arduino
         baud = 9600  # arduino uno runs at 9600 baud
-        fileName = fName.get()  # name of the CSV file generated
+        csvnamed = fName.get()  # name of the CSV file generated
+        replace = ""
 
-        global ser
-        ser = serial.Serial(arduino_port, baud)
-        print("Connected to Arduino port:" + arduino_port)
-        global file
-        file = open(fileName, "w") # w for new file and a for add to existing file
-        print("Created file")
+        
+        if os.path.exists(fName.get()):
+            replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
 
-        global conditions
-        conditions = True
-        top.destroy()
-        top.grab_release()
+        print(replace)
+
+        if replace == "" or replace == "yes":
+            global ser
+            ser = serial.Serial(arduino_port, baud)
+            print("Connected to Arduino port:" + arduino_port)
+            global file
+            file = open(fName.get(), "w") # w for new file and a for add to existing file
+            print("Created file")
+
+            global conditions
+            conditions = True
+            top.destroy()
+            top.grab_release()
 
 #open the Popup Dialogue
 def popupwin():
@@ -165,8 +185,9 @@ def read():
         getData = str(ser.readline())
         data = getData[2:-5]
 
-        global file
-        file = open(fileName, "a")
+        global csvnamed
+        
+        file = open(csvnamed, "a")
         global newStart
         global scroll_bar
         global myLog
@@ -191,7 +212,7 @@ def read():
     labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
     labelTime.place(x = 100, y = 10)
 
-    root.after(1000, read)
+    root.after(1000, read) #sensordelay
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
