@@ -18,7 +18,7 @@ from tkinter import messagebox
 
 
 #backburner:
-#maybe add diagram for fun, ehhhhhhhhhhhhhh, idk about this one tbh
+#maybe add diagram for fun
 #edit exisiting file button, no for now bc idt they need this
 
 
@@ -30,12 +30,16 @@ root.resizable(0, 0)
 myCanvas = Canvas(root, width = 900, height = 600, bg = "White")
 myCanvas.pack()
 
-#icon
-ico = PhotoImage(file = "mark.gif")
-root.iconphoto(True, ico) #doesnt change windows python interpreter icon
-#root.iconbitmap(default = "mark.ico")
 
-#logo
+
+#commented out right now because PyInstaller doesn't automatically include image dependencies
+#we can probably include it later
+#icon
+"""ico = PhotoImage(file = "mark.gif")
+root.iconphoto(True, ico) #doesnt change windows python interpreter icon
+#root.iconbitmap(default = "mark.ico") this line is an alternative way but is bad
+
+#logo 
 fileName = "Benchmark.gif"
 pic = PhotoImage(file = fileName)
 resizedPic = pic.subsample(2, 2)
@@ -44,7 +48,7 @@ logo = Label(root, image = resizedPic)
 logo.photo = resizedPic #ensures label doesn't stay blank
 #logo.pack()
 logo.place(x = 700, y = 10)
-logo.config(width=150, height = 27)
+logo.config(width=150, height = 27)"""
 
 #buttons
 Play = Button(root, height = 5, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
@@ -106,6 +110,16 @@ def pause_click(b): #when button clicked
     global reading
     reading = False
 
+    global file
+    global myLog
+    global scroll_bar
+    file.write(str(datetime.datetime.now())+" PAUSE \n")  # write data with a newline
+    print(str(datetime.datetime.now())+" PAUSE \n")
+    myLog.insert(END, str(datetime.datetime.now())+" PAUSE \n")
+    scroll_bar.config(command = myLog.yview)
+    if Autoscrollvar.get() == 1:
+        myLog.yview(END)
+
 def stop_click(b): #when button clicked
     global reading
     reading = False
@@ -159,11 +173,13 @@ def close_win(top):
             conditions = True
             top.destroy()
             top.grab_release()
+            Cover = Label(root, bg = "white", width = 75, height = 100)
+            Cover.place(x = 10, y = 400)
+            
 
 #open the Popup Dialogue
 def popupwin():
    #Create a Toplevel window
-
    top= Toplevel(root)
    top.geometry("750x250")
 
@@ -194,12 +210,11 @@ def popupwin():
     
 def read():
     global reading
+    global csvnamed
     if reading:
         global ser
         getData = str(ser.readline())
         data = getData[2:-5]
-
-        global csvnamed
         
         file = open(csvnamed, "a")
         global newStart
@@ -223,14 +238,23 @@ def read():
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
 
+    #label for time at the top
     labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
     labelTime.place(x = 100, y = 10)
 
-    root.after(1000, read) #sensordelay
+    #label for filename under the log
+    global labelFile
+    labelFile = Label(root, text = csvnamed, font = ("Verdana", 20))
+    labelFile.place(x = 100, y = 400)
+    
+
+    root.after(1000, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
 
+global csvnamed
+csvnamed = ""
 popupwin()
 
 root.after(1000, read)
