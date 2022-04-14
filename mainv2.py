@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 from lib2to3.pgen2.token import RIGHTSHIFT, RIGHTSHIFTEQUAL
 from pickletools import read_string1
 import random
@@ -51,24 +52,27 @@ logo.config(width=150, height = 27)"""
 #buttons
 Play = Button(root, height = 5, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
 Play.pack()
-Play.place(x = 675, y = 100)
+Play.place(x = 675, y = 10)
 
 Pause = Button(root, height = 5, width = 28, bg = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
 Pause.pack()
-Pause.place(x = 675, y = 190)
+Pause.place(x = 675, y = 100)
 
 Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
-Stop.place(x = 675, y = 280)
+Stop.place(x = 675, y = 190)
 
 newFile = Button(root, height = 5, width = 28, bg  ="light blue", text = "New File", command=lambda: new_File(newFile)) #makes button
 newFile.pack()
-newFile.place(x = 675, y = 370)
+newFile.place(x = 675, y = 280)
 
 recalibrate = Button(root, height = 5, width = 28, bg  ="violet", text = "Recalibrate", command=lambda: recal(recalibrate)) #makes button
 recalibrate.pack()
-recalibrate.place(x = 675, y = 460)
+recalibrate.place(x = 675, y = 370)
 
+newSensorDelay = Button(root, height = 5, width = 28, bg  ="pink", text = "New Sensor Delay", command=lambda: new_sensorDelay(newSensorDelay)) #makes button
+newSensorDelay.pack()
+newSensorDelay.place(x = 675, y = 460)
 
 Autoscrollvar = IntVar()
 
@@ -99,49 +103,59 @@ global conditions
 conditions = False
 global COMset 
 COMset = False
+global sensorDelay
+sensorDelay = 1000
+global newFilebool
+newFilebool = True
+global newSD
+newSD = True
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
+    #time.sleep(3)
     global reading
     if conditions == False: 
         popupwin()
     else:
-        time.sleep(1)
         global ser
-        ser.write("start".encode())
+        global newStart
+        global csvnamed
         reading = True
+
+        file = open(csvnamed, "a")
+
+        if newStart:
+            file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
+            print("Time,PressureIn,PressureOut,PressureDifference\n")
+            newStart = False
+
+            myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
+
         file.write(str(datetime.datetime.now())+" START \n")  # write data with a newline
         print(str(datetime.datetime.now())+" START \n")
         myLog.insert(END, str(datetime.datetime.now())+" START \n")
         scroll_bar.config(command = myLog.yview)
         if Autoscrollvar.get() == 1:
             myLog.yview(END)
-
-        if newStart:
-                file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
-                print("Time,PressureIn,PressureOut,PressureDifference\n")
-                newStart = False
-
-                myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
-                scroll_bar.config(command = myLog.yview)
-                if Autoscrollvar.get() == 1:
-                    myLog.yview(END)
+        
+        
     #reading = True
         
 def pause_click(b): #when button clicked
     global reading
     reading = False
-
-    global file
-    global myLog
-    global scroll_bar
     global ser
-    ser.write("pause".encode())
-    
-    file.write(str(datetime.datetime.now())+" PAUSE \n")  # write data with a newline
+    global csvnamed
+
+    file = open(csvnamed, "a") #was probably being weird before b/c I referenced the global file variable each time, maybe opening the same file twice which meant the "PAUSE" was sent way later
+
+    file.write(str(datetime.datetime.now())+" PAUSE \n")
     print(str(datetime.datetime.now())+" PAUSE \n")
     myLog.insert(END, str(datetime.datetime.now())+" PAUSE \n")
-    scroll_bar.config(command = myLog.yview)
+    scroll_bar.config(command = myLog.yview)  
     if Autoscrollvar.get() == 1:
         myLog.yview(END)
 
@@ -149,7 +163,11 @@ def stop_click(b): #when button clicked
     global reading
     reading = False
     global ser
-    ser.write("stop".encode())
+
+    global csvnamed
+
+    file = open(csvnamed, "a")
+
     file.write(str(datetime.datetime.now())+" STOP \n")  # write data with a newline
     print(str(datetime.datetime.now())+" STOP \n")
     myLog.insert(END, str(datetime.datetime.now())+" STOP \n")
@@ -161,8 +179,12 @@ def stop_click(b): #when button clicked
 
 def new_File(b): #when button clicked
     global reading
+    global newFilebool
     if reading == False:
+        newFilebool = True
         popupwin()
+        global myLog
+        myLog.delete(0, END)
     else:
         messagebox.showinfo('Warning', 'You must pause or stop the program')
 
@@ -171,10 +193,31 @@ def recal(b): #when button clicked
     if reading == False:
         global ser
         ser.write("recalibrate".encode())
-        time.sleep(5)
+
+        global csvnamed 
+
+        file = open(csvnamed, "a") 
         file.write(str(datetime.datetime.now())+" RECALIBRATE \n")  # write data with a newline
         print(str(datetime.datetime.now())+" RECALIBRATE \n")
         myLog.insert(END, str(datetime.datetime.now())+" RECALIBRATE \n")
+        scroll_bar.config(command = myLog.yview)
+        if Autoscrollvar.get() == 1:
+            myLog.yview(END)
+        #messagebox.showinfo('Warning', 'Recalibrating may take a moment...')
+        #time.sleep(5)
+    else:
+        messagebox.showinfo('Warning', 'You must pause or stop the program')
+
+def new_sensorDelay(b): #when button clicked
+    global reading
+    global newSD
+    if reading == False:
+        newSD = True
+        popupwin()
+        file = open(csvnamed, "a") 
+        file.write(str(datetime.datetime.now())+" NEW SENSOR DELAY \n")  # write data with a newline
+        print(str(datetime.datetime.now())+" NEW SENSOR DELAY \n")
+        myLog.insert(END, str(datetime.datetime.now())+" NEW SENSOR DELAY \n")
         scroll_bar.config(command = myLog.yview)
         if Autoscrollvar.get() == 1:
             myLog.yview(END)
@@ -184,45 +227,62 @@ def recal(b): #when button clicked
 #close the popup window
 def close_win(top):
     #arduino setup
-    global inputCOM
-    global fName
-    global csvnamed
+
+    global conditions#whether everything has been met or not for read() to work
+
+    global inputCOM #COM entry box
+    global fName #fileName entry box
+    global dName #sensor delay entry box
+
+    global csvnamed #name of CSV file
     global arduino_port # serial port of Arduino
-    global COMset
+    global sensorDelay # delay in milliseconds
 
-    arduino_port = ""
-    if COMset == True:
-        arduino_port = "pass"
-    else:
+    global COMset #has the COM been set already or not (because you cannot change the COM once the program has started)
+    global newSD #if we have clicked the newSD button
+    global newFilebool #if we have clicked the newFile button
+
+    if COMset == False:
         arduino_port = inputCOM.get()
+    if newFilebool == True:
+        csvnamed = fName.get()
+    if newSD == True:  
+        sensorDelay = dName.get()
 
-    if arduino_port != "" and fName.get() !="":
+    if (arduino_port != "" or COMset == True) and (csvnamed!= ""or newFilebool == False) and (sensorDelay != "" or newSD == False):
         baud = 9600  # arduino uno runs at 9600 baud
-        csvnamed = fName.get()  # name of the CSV file generated
         replace = ""
+        canCloseBool = True
 
-        
-        if os.path.exists(fName.get()):
-            replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
-
-        print(replace)
-
-        if replace == "" or replace == "yes":
-            if COMset == False:
+        if COMset == False:
                 global ser
                 ser = serial.Serial(arduino_port, baud)
                 print("Connected to Arduino port:" + arduino_port)
                 COMset = True
-            global file
-            file = open(fName.get(), "w") # w for new file and a for add to existing file
-            print("Created file")
+        if newSD == True:
+            ser.write(("sD "+str(sensorDelay)).encode())
+            newSD = False
+        if newFilebool == True:
+            if os.path.exists(fName.get()):
+                replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
 
-            global conditions
+            #print(replace)
+            if replace == "" or replace == "yes":
+                global file
+                file = open(fName.get(), "w") # w for new file and a for add to existing file
+                print("Created file")
+                newFilebool = False
+            else:
+                canCloseBool = False
+
+        if canCloseBool == True:
             conditions = True
             top.destroy()
             top.grab_release()
             Cover = Label(root, bg = "white", width = 75, height = 100)
             Cover.place(x = 10, y = 400)
+
+
             
 
 #open the Popup Dialogue
@@ -235,38 +295,46 @@ def popupwin():
    global COMset
    
    if COMset == False:
-    #Create an Entry Widget in the Toplevel window
-    lCOM = Label(top, text="COM Port (ex. \"COM5\" or \"COM3\", check this in Device Manager): ")
-    lCOM.place(x = 10, y = 10)
-    global inputCOM
-    inputCOM = Entry(top, width= 25,  font = ("Verdana", 15))
-    inputCOM.place(x = 375, y = 10)
-    inputCOM.insert(0, "")
+        #Create an Entry Widget in the Toplevel window
+        lCOM = Label(top, text="COM Port (ex. \"COM5\" or \"COM3\", check this in Device Manager): ")
+        lCOM.place(x = 10, y = 10)
+        global inputCOM
+        inputCOM = Entry(top, width= 25,  font = ("Verdana", 15))
+        inputCOM.place(x = 375, y = 10)
+        inputCOM.insert(0, "")
 
-   Lfname = Label(top, text="File Name: ")
-   Lfname.place(x = 10, y = 50)
-   global fName
-   fName = Entry(top, width= 25,  font = ("Verdana", 15))
-   fName.place(x = 375, y = 50)
-   fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
+   if newFilebool == True:
+        Lfname = Label(top, text="File Name: ")
+        Lfname.place(x = 10, y = 50)
+        global fName
+        fName = Entry(top, width= 25,  font = ("Verdana", 15))
+        fName.place(x = 375, y = 50)
+        fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
+
+   if newSD == True:
+        Delayname = Label(top, text="Sensory Delay in milliseconds: ")
+        Delayname.place(x = 10, y = 90)
+        global dName
+        dName = Entry(top, width= 25,  font = ("Verdana", 15))
+        dName.place(x = 375, y = 90)
+        dName.insert(0, "1000")
 
    
 
    #Create a Button Widget in the Toplevel Window
    button= Button(top, text="Ok", command=lambda:close_win(top), width = 5)
-   button.place(x = 660, y = 100)
+   button.place(x = 660, y = 140)
     
 def read():
-    global reading
-    global csvnamed
-    if reading:
+    if conditions:
+        global reading
+        global csvnamed
         global ser
         #print("check1")
         getData = str(ser.readline())
         data = getData[2:-5]
-        if(data != "Initializing"):
+        if reading:
             file = open(csvnamed, "a")
-            global newStart
             global scroll_bar
             global myLog
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
@@ -287,14 +355,13 @@ def read():
     labelFile.place(x = 100, y = 400)
     
 
-    root.after(1000, read) #sensordelay + needs to match arduino sensor delay
+    root.after(sensorDelay, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
-
 global csvnamed
 csvnamed = ""
-popupwin()
+#popupwin()
 
 root.after(1000, read)
 
