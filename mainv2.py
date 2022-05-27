@@ -11,11 +11,8 @@ from tkinter import *
 from tkinter import messagebox
 
 #to do now:
-#control sensordelay and recalibration controls (communication with arduino)
-#have to change sensor delay in here too
 
 #next:
-
 #backburner:
 #maybe add diagram for fun
 #edit exisiting file button, no for now bc idt they need this
@@ -260,7 +257,7 @@ def close_win(top):
                 print("Connected to Arduino port:" + arduino_port)
                 COMset = True
         if newSD == True:
-            ser.write(("sD "+str(sensorDelay)).encode())
+            ser.write(("sd "+str(sensorDelay)).encode())
             newSD = False
         if newFilebool == True:
             if os.path.exists(fName.get()):
@@ -354,7 +351,7 @@ def read():
     labelFile = Label(root, text = csvnamed, font = ("Verdana", 20))
     labelFile.place(x = 100, y = 400)
     
-
+    global sensorDelay
     root.after(sensorDelay, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
