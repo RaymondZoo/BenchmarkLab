@@ -331,12 +331,6 @@ def read():
         getData = str(ser.readline())
         data = getData[2:-5]
         if reading:
-
-            #label for time at the top
-            labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
-            labelTime.place(x = 100, y = 10)
-
-            
             file = open(csvnamed, "a")
             global scroll_bar
             global myLog
@@ -347,6 +341,10 @@ def read():
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
+
+    #label for time at the top
+    labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
+    labelTime.place(x = 100, y = 10)
 
     #label for filename under the log
     global labelFile
