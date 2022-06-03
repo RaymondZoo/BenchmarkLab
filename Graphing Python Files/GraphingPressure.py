@@ -3,7 +3,6 @@ from datetime import datetime
 from tokenize import String
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 import csv
 
 
@@ -21,7 +20,7 @@ except NameError:
 
 # ***** READING CSV FILE *****
 # Open file
-file = open('thirdtest.csv', encoding = 'utf-8-sig')
+file = open('testdata.csv', encoding = 'utf-8-sig')
 type(file)
 csvreader = csv.reader(file)
 
@@ -36,8 +35,14 @@ print(header)
 # Gather data from CSV file
 lines = csvreader
 for row in lines:
-    rawTime.append((row[0]))
-    pressDiff.append(float(row[1]))
+    rawTime.append(row[0])
+    
+    if (row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY "):
+        pressDiff.append(0)
+    elif (row[1] == " PAUSE "):
+        pressDiff.append(pressDiff[len(pressDiff) - 1])
+    else:
+        pressDiff.append(float(row[2]))
 print(rawTime)
 print(pressDiff)
 
@@ -47,24 +52,30 @@ file.close()
 # ***** PROCESSING DATA *****
 # Variables for graphing
 timeGraph = []
-
-# If there are pauses, use previous pressure
-for i in range(len(pressDiff)):
-    if (pressDiff[i] == "PAUSED"):
-        pressDiff[i] == pressDiff[i - 1]
+pressDiffGraph =  []
 
 # Graph raw data if timeInterval is not specified;
 # Otherwise, get average of time interval
 if timeInterval == 0:
+    pressDiffGraph = pressDiff
     for i in range(len(rawTime)):
         timeGraph.append((datetime.strptime(rawTime[i], '%Y-%m-%d %H:%M:%S.%f') - datetime.strptime(rawTime[0], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() * 1000)
+# TODO: Make averages depending on time interval size
 # else:
-#   
+#     sumTime = 0.0
+#     sumPress = 0.0
+#     for i in range(len(rawTime)):
+#         # If sumTime divisible by timeInterval, then append avg to timeGraph and pressDiffGraph
+#         # Reset averages
+#         timeGraph.append((datetime.strptime(rawTime[i], '%Y-%m-%d %H:%M:%S.%f') - datetime.strptime(rawTime[0], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() * 1000)
+#     timeGraph
+#     pressDiffGraph.append()
+timeGraph = [float(x) for x in timeGraph]
 
 
 # ***** GRAPHING *****
 # Graph values onto a plot
-plt.plot(timeGraph, pressDiff, color = 'b', linestyle = 'dashed', marker = 'o', label = "Control")
+plt.plot(timeGraph, pressDiffGraph, color = 'b', linestyle = 'dashed', marker = 'o', label = "Control")
 plt.xticks(rotation = 25)
 
 # Display graph
