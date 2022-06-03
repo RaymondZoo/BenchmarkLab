@@ -10,6 +10,7 @@ import os.path
 from tkinter import *
 from tkinter import messagebox
 
+
 #to do now:
 
 #next:
@@ -19,6 +20,7 @@ from tkinter import messagebox
 
 
 #set up frame
+
 
 root = Tk()
 root.title('Flow Loop Testing Interface')
@@ -47,29 +49,33 @@ logo.place(x = 700, y = 10)
 logo.config(width=150, height = 27)"""
 
 #buttons
-Play = Button(root, height = 5, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
+Play = Button(root, height = 4, width = 28, bg = "green", text = "Play", command=lambda: play_click(Play)) #makes button
 Play.pack()
 Play.place(x = 675, y = 10)
 
-Pause = Button(root, height = 5, width = 28, bg = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
+Pause = Button(root, height = 4, width = 28, bg = "yellow", text = "Pause", command=lambda: pause_click(Pause)) #makes button
 Pause.pack()
 Pause.place(x = 675, y = 100)
 
-Stop = Button(root, height = 5, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
+Stop = Button(root, height = 4, width = 28, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
 Stop.pack()
 Stop.place(x = 675, y = 190)
 
-newFile = Button(root, height = 5, width = 28, bg  ="light blue", text = "New File", command=lambda: new_File(newFile)) #makes button
+newFile = Button(root, height = 4, width = 28, bg  ="light blue", text = "New File", command=lambda: new_File(newFile)) #makes button
 newFile.pack()
 newFile.place(x = 675, y = 280)
 
-recalibrate = Button(root, height = 5, width = 28, bg  ="violet", text = "Recalibrate", command=lambda: recal(recalibrate)) #makes button
+recalibrate = Button(root, height = 4, width = 28, bg  ="violet", text = "Recalibrate", command=lambda: recal(recalibrate)) #makes button
 recalibrate.pack()
 recalibrate.place(x = 675, y = 370)
 
-newSensorDelay = Button(root, height = 5, width = 28, bg  ="pink", text = "New Sensor Delay", command=lambda: new_sensorDelay(newSensorDelay)) #makes button
+newSensorDelay = Button(root, height = 4, width = 28, bg  ="pink", text = "New Sensor Delay", command=lambda: new_sensorDelay(newSensorDelay)) #makes button
 newSensorDelay.pack()
 newSensorDelay.place(x = 675, y = 460)
+
+graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(newSensorDelay)) #makes button
+graphButton.pack()
+graphButton.place(x = 675, y = 550)
 
 Autoscrollvar = IntVar()
 
@@ -111,6 +117,7 @@ def play_click(b): #when button clicked
     #if COM or file name not set then don't start
     #time.sleep(3)
     global reading
+    global conditions
     if conditions == False: 
         popupwin()
     else:
@@ -131,9 +138,9 @@ def play_click(b): #when button clicked
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
 
-        file.write(str(datetime.datetime.now())+" START \n")  # write data with a newline
-        print(str(datetime.datetime.now())+" START \n")
-        myLog.insert(END, str(datetime.datetime.now())+" START \n")
+        file.write(str(datetime.datetime.now())+", START \n")  # write data with a newline
+        print(str(datetime.datetime.now())+", START \n")
+        myLog.insert(END, str(datetime.datetime.now())+", START \n")
         scroll_bar.config(command = myLog.yview)
         if Autoscrollvar.get() == 1:
             myLog.yview(END)
@@ -149,9 +156,9 @@ def pause_click(b): #when button clicked
 
     file = open(csvnamed, "a") #was probably being weird before b/c I referenced the global file variable each time, maybe opening the same file twice which meant the "PAUSE" was sent way later
 
-    file.write(str(datetime.datetime.now())+" PAUSE \n")
-    print(str(datetime.datetime.now())+" PAUSE \n")
-    myLog.insert(END, str(datetime.datetime.now())+" PAUSE \n")
+    file.write(str(datetime.datetime.now())+", PAUSE \n")
+    print(str(datetime.datetime.now())+", PAUSE \n")
+    myLog.insert(END, str(datetime.datetime.now())+", PAUSE \n")
     scroll_bar.config(command = myLog.yview)  
     if Autoscrollvar.get() == 1:
         myLog.yview(END)
@@ -165,9 +172,9 @@ def stop_click(b): #when button clicked
 
     file = open(csvnamed, "a")
 
-    file.write(str(datetime.datetime.now())+" STOP \n")  # write data with a newline
-    print(str(datetime.datetime.now())+" STOP \n")
-    myLog.insert(END, str(datetime.datetime.now())+" STOP \n")
+    file.write(str(datetime.datetime.now())+", STOP \n")  # write data with a newline
+    print(str(datetime.datetime.now())+", STOP \n")
+    myLog.insert(END, str(datetime.datetime.now())+", STOP \n")
     scroll_bar.config(command = myLog.yview)
     if Autoscrollvar.get() == 1:
         myLog.yview(END)
@@ -187,39 +194,67 @@ def new_File(b): #when button clicked
 
 def recal(b): #when button clicked
     global reading
-    if reading == False:
-        global ser
-        ser.write("recalibrate".encode())
-
-        global csvnamed 
-
-        file = open(csvnamed, "a") 
-        file.write(str(datetime.datetime.now())+" RECALIBRATE \n")  # write data with a newline
-        print(str(datetime.datetime.now())+" RECALIBRATE \n")
-        myLog.insert(END, str(datetime.datetime.now())+" RECALIBRATE \n")
-        scroll_bar.config(command = myLog.yview)
-        if Autoscrollvar.get() == 1:
-            myLog.yview(END)
-        #messagebox.showinfo('Warning', 'Recalibrating may take a moment...')
-        #time.sleep(5)
+    global conditions
+    if conditions == False: 
+        popupwin()
     else:
-        messagebox.showinfo('Warning', 'You must pause or stop the program')
+        if reading == False:
+            global ser
+            ser.write("recalibrate".encode())
+
+            global csvnamed 
+
+            file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", RECALIBRATE \n")  # write data with a newline
+            print(str(datetime.datetime.now())+", RECALIBRATE \n")
+            myLog.insert(END, str(datetime.datetime.now())+", RECALIBRATE \n")
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
+            #messagebox.showinfo('Warning', 'Recalibrating may take a moment...')
+            #time.sleep(5)
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
 
 def new_sensorDelay(b): #when button clicked
     global reading
     global newSD
-    if reading == False:
-        newSD = True
+    global conditions
+    if conditions == False: 
         popupwin()
-        file = open(csvnamed, "a") 
-        file.write(str(datetime.datetime.now())+" NEW SENSOR DELAY \n")  # write data with a newline
-        print(str(datetime.datetime.now())+" NEW SENSOR DELAY \n")
-        myLog.insert(END, str(datetime.datetime.now())+" NEW SENSOR DELAY \n")
-        scroll_bar.config(command = myLog.yview)
-        if Autoscrollvar.get() == 1:
-            myLog.yview(END)
     else:
-        messagebox.showinfo('Warning', 'You must pause or stop the program')
+        if reading == False:
+            newSD = True
+            popupwin()
+            file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # write data with a newline
+            print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
+
+def drawGraph(b):
+     top = Toplevel(root)
+     top.geometry("750x250")
+     top.grab_set()
+     LGraph = Label(top, text="Time Interval (For raw data, input 0): ")
+     LGraph.place(x = 10, y = 10)
+     global inputGraph
+     inputGraph = Entry(top, width= 25,  font = ("Verdana", 15))
+     inputGraph.place(x = 375, y = 10)
+     inputGraph.insert(0, "")
+
+     #Create a Button Widget in the Toplevel Window
+     button= Button(top, text="Ok", command=lambda:closeGraphSetup(top), width = 5)
+     button.place(x = 660, y = 140)
+    
+def closeGraphSetup(top):
+    top.destroy()
+    top.grab_release()
+    return
 
 #close the popup window
 def close_win(top):
