@@ -6,6 +6,7 @@ import serial
 import datetime
 import time
 import os.path
+import AutomaticGraphingProgram as AGP
 
 from tkinter import *
 from tkinter import messagebox
@@ -73,7 +74,7 @@ newSensorDelay = Button(root, height = 4, width = 28, bg  ="pink", text = "New S
 newSensorDelay.pack()
 newSensorDelay.place(x = 675, y = 460)
 
-graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(newSensorDelay)) #makes button
+graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
 graphButton.pack()
 graphButton.place(x = 675, y = 550)
 
@@ -112,6 +113,8 @@ global newFilebool
 newFilebool = True
 global newSD
 newSD = True
+global graphing
+graphing = False
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
@@ -236,7 +239,10 @@ def new_sensorDelay(b): #when button clicked
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
-def drawGraph(b):
+def drawGraph(b): #when button clicked
+    global graphing
+    graphing = True
+    """"
      top = Toplevel(root)
      top.geometry("750x250")
      top.grab_set()
@@ -249,12 +255,13 @@ def drawGraph(b):
 
      #Create a Button Widget in the Toplevel Window
      button= Button(top, text="Ok", command=lambda:closeGraphSetup(top), width = 5)
-     button.place(x = 660, y = 140)
+     button.place(x = 660, y = 140)"""
     
+"""
 def closeGraphSetup(top):
     top.destroy()
     top.grab_release()
-    return
+    return"""
 
 #close the popup window
 def close_win(top):
@@ -376,6 +383,12 @@ def read():
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
+
+            if graphing:
+                raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
+                proc_data = AGP.process_data(raw_data)
+                AGP.graph_data(proc_data)
+
 
     #label for time at the top
     labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 20))
