@@ -153,7 +153,9 @@ def graph_data(proc_data):
     ax.set_xlabel('Time (' + unit_name + ')')
     ax.set_ylabel('Pressure (psi)')
     ax.grid(True)
+    plt.ion()
     plt.show() # Shows the graph
+    plt.pause(0.001)
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
