@@ -145,21 +145,21 @@ def graph_data(proc_data):
         unit_in_ms = 1000
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
+    ax.clear()
+    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
+    
     ax.set_xlabel('Time (' + unit_name + ')')
     ax.set_ylabel('Pressure (psi)')
+    ax.set_xlim(0)
+    ax.grid(True)
     
-    drawnow(make_fig)
+    drawnow
     plt.pause(.000001)
     # plt.ion()
     # plt.show() # Shows the graph
     # plt.pause(0.01)
     
-def make_fig():
-    # Graph values onto a plot
-    ax.clear()
-    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
-    ax.set_xlim(0)
-    ax.grid(True)
+
 
 
 def change_graph_units(proc_data, unit_in_ms):
