@@ -154,8 +154,9 @@ def graph_data(proc_data):
     ax.grid(True)
     
     drawnow
-    plt.pause(.000001)
-
+    fig.canvas.draw_idle()
+    fig.canvas.start_event_loop(0.000001)
+    # plt.pause(.000001)
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
