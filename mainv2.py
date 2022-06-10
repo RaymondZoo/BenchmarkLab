@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from email.contentmanager import raw_data_manager
 from lib2to3.pgen2.token import RIGHTSHIFT, RIGHTSHIFTEQUAL
 from pickletools import read_string1
 import random
@@ -22,7 +23,7 @@ from tkinter import messagebox
 
 #set up frame
 
-
+global root
 root = Tk()
 root.title('Flow Loop Testing Interface')
 root.resizable(0, 0)
@@ -74,10 +75,12 @@ newSensorDelay = Button(root, height = 4, width = 28, bg  ="pink", text = "New S
 newSensorDelay.pack()
 newSensorDelay.place(x = 675, y = 460)
 
-graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
+"""
+graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph/Close Graph", command=lambda: drawGraph(graphButton)) #makes button
 graphButton.pack()
-graphButton.place(x = 675, y = 550)
+graphButton.place(x = 675, y = 550)"""
 
+global Autoscrollvar
 Autoscrollvar = IntVar()
 
 Autoscroll = Checkbutton(root, height = 2, width = 10, text = "Autoscroll", variable = Autoscrollvar, onvalue = 1, offvalue = 0) #makes button
@@ -113,21 +116,24 @@ global newFilebool
 newFilebool = True
 global newSD
 newSD = True
-global graphing
-graphing = False
+global raw_data
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
     #time.sleep(3)
     global reading
     global conditions
+    global root
     if conditions == False: 
         popupwin()
     else:
         global ser
         global newStart
         global csvnamed
+        global Autoscrollvar
+        global scroll_bar
         reading = True
+        global myLog
 
         file = open(csvnamed, "a")
 
@@ -135,7 +141,6 @@ def play_click(b): #when button clicked
             file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
             print("Time,PressureIn,PressureOut,PressureDifference\n")
             newStart = False
-
             myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
@@ -156,6 +161,10 @@ def pause_click(b): #when button clicked
     reading = False
     global ser
     global csvnamed
+    global myLog
+    global Autoscrollvar
+    global scroll_bar
+    global root
 
     file = open(csvnamed, "a") #was probably being weird before b/c I referenced the global file variable each time, maybe opening the same file twice which meant the "PAUSE" was sent way later
 
@@ -167,11 +176,16 @@ def pause_click(b): #when button clicked
         myLog.yview(END)
 
 def stop_click(b): #when button clicked
+    global root
     global reading
     reading = False
     global ser
 
     global csvnamed
+
+    global Autoscrollvar
+    global scroll_bar
+    global myLog
 
     file = open(csvnamed, "a")
 
@@ -185,8 +199,10 @@ def stop_click(b): #when button clicked
     newStart = True
 
 def new_File(b): #when button clicked
+    global root
     global reading
     global newFilebool
+    global myLog
     if reading == False:
         newFilebool = True
         popupwin()
@@ -196,8 +212,12 @@ def new_File(b): #when button clicked
         messagebox.showinfo('Warning', 'You must pause or stop the program')
 
 def recal(b): #when button clicked
+    global root
     global reading
     global conditions
+    global Autoscrollvar
+    global scroll_bar
+    global myLog
     if conditions == False: 
         popupwin()
     else:
@@ -221,8 +241,12 @@ def recal(b): #when button clicked
 
 def new_sensorDelay(b): #when button clicked
     global reading
+    global root
     global newSD
     global conditions
+    global Autoscrollvar
+    global scroll_bar
+    global myLog
     if conditions == False: 
         popupwin()
     else:
@@ -239,10 +263,16 @@ def new_sensorDelay(b): #when button clicked
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
+"""
 def drawGraph(b): #when button clicked
-    global graphing
-    graphing = True
-    """"
+    global reading
+    global raw_data
+
+    if(reading == False):
+        proc_data = AGP.process_data(raw_data)
+        AGP.graph_data(proc_data)"""
+
+"""
      top = Toplevel(root)
      top.geometry("750x250")
      top.grab_set()
@@ -266,6 +296,7 @@ def closeGraphSetup(top):
 #close the popup window
 def close_win(top):
     #arduino setup
+    global root
 
     global conditions#whether everything has been met or not for read() to work
 
@@ -327,6 +358,7 @@ def close_win(top):
 #open the Popup Dialogue
 def popupwin():
    #Create a Toplevel window
+   global root
    top= Toplevel(root)
    top.geometry("750x250")
 
@@ -365,10 +397,15 @@ def popupwin():
    button.place(x = 660, y = 140)
     
 def read():
+    global root
     if conditions:
         global reading
         global csvnamed
         global ser
+        global raw_data
+        global Autoscrollvar
+        global scroll_bar
+        global myLog
         #print("check1")
         getData = str(ser.readline())
         data = getData[2:-5]
@@ -379,15 +416,15 @@ def read():
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
 
+            root.grab_set()
+            raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
+            proc_data = AGP.process_data(raw_data)
+            AGP.graph_data(proc_data)
+
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
-
-            if graphing:
-                raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
-                proc_data = AGP.process_data(raw_data)
-                AGP.graph_data(proc_data)
 
 
     #label for time at the top
