@@ -153,9 +153,7 @@ def graph_data(proc_data):
     ax.set_xlim(0)
     ax.grid(True)
     
-    drawnow
-    plt.pause(.000001)
-
+    plt.savefig("fig.pdf")
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
