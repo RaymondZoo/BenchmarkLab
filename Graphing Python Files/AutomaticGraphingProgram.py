@@ -1,6 +1,7 @@
 from ast import Constant
 from datetime import datetime
 from tokenize import String
+from drawnow import *
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
@@ -144,18 +145,22 @@ def graph_data(proc_data):
         unit_in_ms = 1000
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
+    ax.set_xlabel('Time (' + unit_name + ')')
+    ax.set_ylabel('Pressure (psi)')
+    
+    drawnow(make_fig)
+    plt.pause(.000001)
+    # plt.ion()
+    # plt.show() # Shows the graph
+    # plt.pause(0.01)
+    
+def make_fig():
     # Graph values onto a plot
     ax.clear()
     ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
-
-    # Display graph
     ax.set_xlim(0)
-    ax.set_xlabel('Time (' + unit_name + ')')
-    ax.set_ylabel('Pressure (psi)')
     ax.grid(True)
-    plt.ion()
-    plt.show() # Shows the graph
-    plt.pause(0.001)
+
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
@@ -163,6 +168,6 @@ def change_graph_units(proc_data, unit_in_ms):
             proc_data[0][i] = proc_data[0][i] / unit_in_ms
     return proc_data
 
-# raw_data = read_file()
-# proc_data = process_data(raw_data)
-# graph_data(proc_data)
+raw_data = read_file()
+proc_data = process_data(raw_data)
+graph_data(proc_data)
