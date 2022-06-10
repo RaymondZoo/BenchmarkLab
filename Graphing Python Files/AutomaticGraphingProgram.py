@@ -7,7 +7,7 @@ import csv
 
 # Variables, must only be altered by reading line inputs
 raw_time = []
-press_diff = []
+press = []
 
 # ***** READING LINE INPUTS *****
 def read_line_inputs(str_read):
@@ -20,7 +20,7 @@ def read_line_inputs(str_read):
     for i in range(0, len(str_read)):
         character = str_read[i]
         if character == ",":
-            col = col + 1
+            col += 1
             new_data = True
         else:
             # Update time if we are reading time
@@ -35,19 +35,19 @@ def read_line_inputs(str_read):
             elif col == 1:
                 if new_data:
                     # New pressure data
-                    press_diff.append(character)
+                    press.append(character)
                     new_data = False
                 else:
                     # Adding to current data string
-                    press_diff[len(raw_time) - 1] += character
-    press_diff[len(raw_time) - 1] = float(press_diff[len(raw_time) - 1])
-    return [raw_time, press_diff]
+                    press[len(raw_time) - 1] += character
+    press[len(raw_time) - 1] = float(press[len(raw_time) - 1])
+    return [raw_time, press]
 
 # ***** READING CSV FILE *****
 def read_file():
     # CSV values
     raw_time_f = []
-    press_diff_f = []
+    press_f = []
 
     # Open file
     file = open('testdata.csv', encoding = 'utf-8-sig')
@@ -66,11 +66,11 @@ def read_file():
     for row in lines:
         if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
             raw_time_f.append(row[0])
-            press_diff_f.append(float(row[1]))
+            press_f.append(float(row[1]))
 
     # Finished reading a file
     file.close()
-    return [raw_time_f, press_diff_f]
+    return [raw_time_f, press_f]
 
 # ***** PROCESSING DATA *****
 def process_data(raw_data):
@@ -95,8 +95,7 @@ def process_data(raw_data):
 def get_avg_data(unscaled_data, avg_duration):
     # Variables
     avg_time = []
-    avg_press_diff = []
-    
+    avg_press = []
     start_time = 0
     nodes = 0
     time_sum = 0
@@ -108,7 +107,7 @@ def get_avg_data(unscaled_data, avg_duration):
             # Update sums
             time_sum = time_sum + unscaled_data[0][i]
             press_sum = press_sum + unscaled_data[1][i]
-            nodes = nodes + 1
+            nodes += 1
         else:
             # Show raw data if the time passed as parameter is too small
             if nodes == 0:
@@ -116,14 +115,14 @@ def get_avg_data(unscaled_data, avg_duration):
             else:
                 # Append avg values
                 avg_time.append(time_sum / nodes)
-                avg_press_diff.append(press_sum / nodes)
+                avg_press.append(press_sum / nodes)
                 
                 # Reset values
                 start_time = unscaled_data[0][i]
                 nodes = 0
                 time_sum = 0
                 press_sum = 0
-    return [avg_time, avg_press_diff]
+    return [avg_time, avg_press]
 
 # ***** GRAPHING *****
 def graph_data(proc_data):
@@ -145,13 +144,14 @@ def graph_data(proc_data):
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
     # Graph values onto a plot
-    plt.plot(proc_data[0], proc_data[1], color = 'b', linestyle = 'dashed', marker = 'o', label = "Control")
+    plt.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
     plt.xticks(rotation = 25)
     
     # Display graph
     plt.title('Pressure Over Time', fontsize = 20)
     plt.xlabel('Time (' + unit_name + ')')
-    plt.ylabel('Pressure')
+    plt.ylabel('Pressure (psi)')
+    plt.xlim(left = 0)
     plt.grid()
     plt.legend()
     plt.show() # Shows the graph
