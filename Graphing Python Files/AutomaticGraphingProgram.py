@@ -8,6 +8,7 @@ import csv
 # Variables, must only be altered by reading line inputs
 raw_time = []
 press = []
+fig, ax = plt.subplots()
 
 # ***** READING LINE INPUTS *****
 def read_line_inputs(str_read):
@@ -144,16 +145,14 @@ def graph_data(proc_data):
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
     # Graph values onto a plot
-    plt.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
-    plt.xticks(rotation = 25)
-    
+    ax.clear()
+    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
+
     # Display graph
-    plt.title('Pressure Over Time', fontsize = 20)
-    plt.xlabel('Time (' + unit_name + ')')
-    plt.ylabel('Pressure (psi)')
-    plt.xlim(left = 0)
-    plt.grid()
-    plt.legend()
+    ax.set_xlim(0)
+    ax.set_xlabel('Time (' + unit_name + ')')
+    ax.set_ylabel('Pressure (psi)')
+    ax.grid(True)
     plt.show() # Shows the graph
 
 def change_graph_units(proc_data, unit_in_ms):
