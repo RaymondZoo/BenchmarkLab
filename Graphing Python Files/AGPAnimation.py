@@ -1,8 +1,12 @@
 from ast import Constant
+from curses import raw
 from datetime import datetime
 from tokenize import String
 from drawnow import *
+from matplotlib import style
+
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 import numpy as np
 import csv
 
@@ -21,7 +25,7 @@ def read_line_inputs(str_read):
     # Appends the data to the proper list
     for i in range(0, len(str_read)):
         character = str_read[i]
-        if character == ",":
+        if character == ',':
             col += 1
             new_data = True
         else:
@@ -52,7 +56,7 @@ def read_file():
     press_f = []
 
     # Open file
-    file = open('testdata.csv', encoding = 'utf-8-sig')
+    file = open('testdata.csv', 'r', encoding = 'utf-8-sig')
     type(file)
     csvreader = csv.reader(file)
 
@@ -66,7 +70,7 @@ def read_file():
     # Gather data from CSV file
     lines = csvreader
     for row in lines:
-        if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
+        if not(row[1] == ' START ' or row[1] == ' RECALIBRATE ' or  row[1] == ' NEW SENSOR DELAY ' or row[1] == ' PAUSE '):
             raw_time_f.append(row[0])
             press_f.append(float(row[1]))
 
@@ -130,31 +134,31 @@ def get_avg_data(unscaled_data, avg_duration):
 def graph_data(proc_data):
     # Change the units of the time automatically
     unit_in_ms = 0
-    unit_name = "ms"
+    unit_name = 'ms'
     if proc_data[0][len(proc_data[0]) - 1] >= 86400000:
         # Unit changed to hours
-        unit_name = "hr"
+        unit_name = 'hr'
         unit_in_ms = 3600000
     elif proc_data[0][len(proc_data[0]) - 1] >= 1200000:
         # Unit changed to minutes
-        unit_name = "min"
+        unit_name = 'min'
         unit_in_ms = 60000
     elif proc_data[0][len(proc_data[0]) - 1] >= 60000:
         # Unit changed to seconds
-        unit_name = "s"
+        unit_name = 's'
         unit_in_ms = 1000
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
     ax.clear()
-    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
+    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = 'Control')
     
     ax.set_xlabel('Time (' + unit_name + ')')
     ax.set_ylabel('Pressure (psi)')
     ax.set_xlim(0)
     ax.grid(True)
     
-    drawnow
-    plt.pause(.000001)
+    # drawnow
+    # plt.pause(.000001) # Problem with this code is that it pushes the window up
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
@@ -162,6 +166,10 @@ def change_graph_units(proc_data, unit_in_ms):
             proc_data[0][i] = proc_data[0][i] / unit_in_ms
     return proc_data
 
-# raw_data = read_file()
-# proc_data = process_data(raw_data)
-# graph_data(proc_data)
+def animate(self):
+    raw_data = [raw_time, press]
+    proc_data = process_data(raw_data)
+    graph_data(proc_data)
+
+# ani = animation.FuncAnimation(fig, animate, interval = 1000)
+# plt.show()
