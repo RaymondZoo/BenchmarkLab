@@ -12,7 +12,6 @@ import AutomaticGraphingProgram as AGP
 from tkinter import *
 from tkinter import messagebox
 
-
 #to do now:
 
 #next:
@@ -76,7 +75,7 @@ newSensorDelay.pack()
 newSensorDelay.place(x = 675, y = 460)
 
 """
-graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph/Close Graph", command=lambda: drawGraph(graphButton)) #makes button
+graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
 graphButton.pack()
 graphButton.place(x = 675, y = 550)"""
 
@@ -263,31 +262,36 @@ def new_sensorDelay(b): #when button clicked
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
-"""
-def drawGraph(b): #when button clicked
+
+#def drawGraph(b): #when button clicked
+    """
     global reading
     global raw_data
-
     if(reading == False):
         proc_data = AGP.process_data(raw_data)
-        AGP.graph_data(proc_data)"""
+        AGP.graph_data(proc_data)
+    """
+    """
+    global root
+    global top
+    top = Toplevel(root)
+    top.geometry("750x250")
+    top.grab_set()
+    top.grab_set()"""
+    """
+    #LGraph = Label(top, text="Time Interval (For raw data, input 0): ")
+    #LGraph.place(x = 10, y = 10)
+    #global inputGraph
+    #inputGraph = Entry(top, width= 25,  font = ("Verdana", 15))
+    #inputGraph.place(x = 375, y = 10)
+    #inputGraph.insert(0, "")
 
-"""
-     top = Toplevel(root)
-     top.geometry("750x250")
-     top.grab_set()
-     LGraph = Label(top, text="Time Interval (For raw data, input 0): ")
-     LGraph.place(x = 10, y = 10)
-     global inputGraph
-     inputGraph = Entry(top, width= 25,  font = ("Verdana", 15))
-     inputGraph.place(x = 375, y = 10)
-     inputGraph.insert(0, "")
-
+    """
+    """
      #Create a Button Widget in the Toplevel Window
      button= Button(top, text="Ok", command=lambda:closeGraphSetup(top), width = 5)
-     button.place(x = 660, y = 140)"""
+     button.place(x = 660, y = 140)
     
-"""
 def closeGraphSetup(top):
     top.destroy()
     top.grab_release()
@@ -416,7 +420,6 @@ def read():
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
 
-            root.grab_set()
             raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
             proc_data = AGP.process_data(raw_data)
             AGP.graph_data(proc_data)
@@ -425,6 +428,7 @@ def read():
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
+                #myLog.see(END)
 
 
     #label for time at the top
@@ -437,6 +441,7 @@ def read():
     labelFile.place(x = 100, y = 400)
     
     global sensorDelay
+    root.grab_set()
     root.after(sensorDelay, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
