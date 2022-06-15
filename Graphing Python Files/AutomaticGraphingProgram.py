@@ -11,8 +11,9 @@ import time
 # Variables, must only be altered by reading line inputs
 raw_time = []
 press = []
-fig = Figure(figsize = (5, 4), dpi = 200)
-ax = fig.add_subplot()
+fig, ax = plt.subplots()
+# fig = Figure(figsize = (5, 4), dpi = 200)
+# ax = fig.add_subplot()
 
 # ***** READING LINE INPUTS *****
 def read_line_inputs(str_read):
@@ -37,7 +38,7 @@ def read_line_inputs(str_read):
                 else:
                     # Adding to current time string
                     raw_time[len(raw_time) - 1] += character
-            elif col == 1:
+            elif col == 3:
                 if new_data:
                     # New pressure data
                     press.append(character)
@@ -51,8 +52,8 @@ def read_line_inputs(str_read):
 # ***** READING CSV FILE *****
 def read_file():
     # CSV values
-    raw_time = []
-    press = []
+    raw_time_f = []
+    press_f = []
 
     # Open file
     file = open('testdata.csv', encoding = 'utf-8-sig')
@@ -70,12 +71,12 @@ def read_file():
     lines = csvreader
     for row in lines:
         if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
-            raw_time.append(row[0])
-            press.append(float(row[1]))
+            raw_time_f.append(row[0])
+            press_f.append(float(row[3]))
 
     # Finished reading a file
     file.close()
-    return [raw_time, press]
+    return [raw_time_f, press_f]
 
 # ***** PROCESSING DATA *****
 def process_data(raw_data):
@@ -157,6 +158,7 @@ def graph_data(proc_data):
     ax.grid(True)
     
     drawnow
+    # plt.show()
     plt.pause(.000001)
 
 def change_graph_units(proc_data, unit_in_ms):

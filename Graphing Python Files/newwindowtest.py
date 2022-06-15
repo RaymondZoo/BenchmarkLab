@@ -16,13 +16,50 @@ root.wm_title("Embedding in Tk")
 fig = Figure(figsize=(5, 4), dpi=100)
 t = np.arange(0, 3, .01)
 ax = fig.add_subplot()
+raw_time = []
+press = []
+# Scale data by this amount of time
+avg_duration = 0
 
+# ***** READING LINE INPUTS *****
+def read_line_inputs(str_read):
+    # Prerequisite: ONLY PUT IN DATA THAT HAS NUMBERS
+    col = 0
+    new_data = True
+    
+    # Takes a line from a CSV input, reads it
+    # Appends the data to the proper list
+    for i in range(0, len(str_read)):
+        character = str_read[i]
+        if character == ",":
+            col += 1
+            new_data = True
+        else:
+            # Update time if we are reading time
+            if col == 0:
+                if new_data:
+                    # New time, append to raw_time
+                    raw_time.append(character)
+                    new_data = False
+                else:
+                    # Adding to current time string
+                    raw_time[len(raw_time) - 1] += character
+            elif col == 3:
+                if new_data:
+                    # New pressure data
+                    press.append(character)
+                    new_data = False
+                else:
+                    # Adding to current data string
+                    press[len(raw_time) - 1] += character
+    press[len(raw_time) - 1] = float(press[len(raw_time) - 1])
+    return [raw_time, press]
 
 # ***** READING CSV FILE *****
 def read_file():
     # CSV values
-    raw_time_f = []
-    press_f = []
+    raw_time = []
+    press = []
 
     # Open file
     file = open('testdata.csv', encoding = 'utf-8-sig')
@@ -40,12 +77,12 @@ def read_file():
     lines = csvreader
     for row in lines:
         if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
-            raw_time_f.append(row[0])
-            press_f.append(float(row[1]))
+            raw_time.append(row[0])
+            press.append(float(row[3]))
 
     # Finished reading a file
     file.close()
-    return [raw_time_f, press_f]
+    return [raw_time, press]
 
 # ***** PROCESSING DATA *****
 def process_data(raw_data):
@@ -56,9 +93,6 @@ def process_data(raw_data):
     for i in range(len(raw_data[0])):
         time = (datetime.strptime(raw_data[0][i], '%Y-%m-%d %H:%M:%S.%f') - datetime.strptime(raw_data[0][0], '%Y-%m-%d %H:%M:%S.%f')).total_seconds() * 1000
         proc_time.append(float(time))
-
-    # Scale data by this amount of time
-    avg_duration = 0
 
     # Graph raw data if avg_duration is not specified;
     # Otherwise, get average of time interval
@@ -151,19 +185,22 @@ canvas.mpl_connect("key_press_event", key_press_handler)
 button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
 
 
-# def update_frequency(new_val):
-#     # retrieve frequency
-#     f = float(new_val)
+def update_frequency(new_val):
+    # retrieve frequency
+    f = float(new_val)
 
-#     # update data
-#     y = 2 * np.sin(2 * np.pi * f * t)
-#     line.set_data(t, y)
+    # update data
+    global avg_duration
+    avg_duration = float(new_val)
+    raw_data = read_file()
+    proc_data = process_data(raw_data)
+    graph_data(proc_data)
 
-#     # required to update canvas and attached toolbar!
-#     canvas.draw()
+    # required to update canvas and attached toolbar!
+    canvas.draw()
 
-# slider_update = tkinter.Scale(root, from_=1, to=5, orient=tkinter.HORIZONTAL,
-#                               command=update_frequency, label="Frequency [Hz]")
+slider_update = tkinter.Scale(root, from_=0, to=6000, orient=tkinter.HORIZONTAL,
+                              command=update_frequency, label="Frequency [Hz]")
 
 
 # Packing order is important. Widgets are processed sequentially and if there
@@ -171,7 +208,7 @@ button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
 # The canvas is rather flexible in its size, so we pack it last which makes
 # sure the UI controls are displayed as long as possible.
 button_quit.pack(side=tkinter.BOTTOM)
-# slider_update.pack(side=tkinter.BOTTOM)
+slider_update.pack(side=tkinter.BOTTOM)
 toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
 canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
