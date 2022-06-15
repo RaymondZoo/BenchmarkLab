@@ -51,8 +51,8 @@ def read_line_inputs(str_read):
 # ***** READING CSV FILE *****
 def read_file():
     # CSV values
-    raw_time_f = []
-    press_f = []
+    raw_time = []
+    press = []
 
     # Open file
     file = open('testdata.csv', encoding = 'utf-8-sig')
@@ -70,12 +70,12 @@ def read_file():
     lines = csvreader
     for row in lines:
         if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
-            raw_time_f.append(row[0])
-            press_f.append(float(row[1]))
+            raw_time.append(row[0])
+            press.append(float(row[1]))
 
     # Finished reading a file
     file.close()
-    return [raw_time_f, press_f]
+    return [raw_time, press]
 
 # ***** PROCESSING DATA *****
 def process_data(raw_data):
@@ -164,6 +164,13 @@ def change_graph_units(proc_data, unit_in_ms):
         for i in range(len(proc_data[0])):
             proc_data[0][i] = proc_data[0][i] / unit_in_ms
     return proc_data
+
+def clear_data():
+    ax.clear()
+    global raw_time
+    raw_time = []
+    global press
+    press = []
 
 # raw_data = read_file()
 # proc_data = process_data(raw_data)
