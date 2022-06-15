@@ -2,14 +2,17 @@ from ast import Constant
 from datetime import datetime
 from tokenize import String
 from drawnow import *
+from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import time
 
 # Variables, must only be altered by reading line inputs
 raw_time = []
 press = []
-fig, ax = plt.subplots()
+fig = Figure(figsize = (5, 4), dpi = 200)
+ax = fig.add_subplot()
 
 # ***** READING LINE INPUTS *****
 def read_line_inputs(str_read):
