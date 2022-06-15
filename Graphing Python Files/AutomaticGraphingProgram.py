@@ -66,11 +66,10 @@ def read_file():
         # Add first row
         header.append(row)
         break
-
     # Gather data from CSV file
     lines = csvreader
     for row in lines:
-        if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
+        if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE " or row[1] == " STOP "):
             raw_time_f.append(row[0])
             press_f.append(float(row[3]))
 
@@ -174,6 +173,6 @@ def clear_data():
     global press
     press = []
 
-# raw_data = read_file()
-# proc_data = process_data(raw_data)
-# graph_data(proc_data)
+raw_data = read_file()
+proc_data = process_data(raw_data)
+graph_data(proc_data)

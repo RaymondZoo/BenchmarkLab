@@ -62,7 +62,7 @@ def read_file():
     press = []
 
     # Open file
-    file = open('testdata.csv', encoding = 'utf-8-sig')
+    file = open('20220526_Jo Mill_Data.csv', encoding = 'utf-8-sig')
     type(file)
     csvreader = csv.reader(file)
 
@@ -76,7 +76,7 @@ def read_file():
     # Gather data from CSV file
     lines = csvreader
     for row in lines:
-        if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
+        if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE " or row[1] == " STOP "):
             raw_time.append(row[0])
             press.append(float(row[3]))
 
@@ -138,7 +138,7 @@ def graph_data(proc_data):
     # Change the units of the time automatically
     unit_in_ms = 0
     unit_name = "ms"
-    if proc_data[0][len(proc_data[0]) - 1] >= 86400000:
+    if proc_data[0][len(proc_data[0]) - 1] >= 14400000:
         # Unit changed to hours
         unit_name = "hr"
         unit_in_ms = 3600000
@@ -199,7 +199,7 @@ def update_frequency(new_val):
     # required to update canvas and attached toolbar!
     canvas.draw()
 
-slider_update = tkinter.Scale(root, from_=0, to=6000, orient=tkinter.HORIZONTAL,
+slider_update = tkinter.Scale(root, from_=0, to=6000000, orient=tkinter.HORIZONTAL,
                               command=update_frequency, label="Frequency [Hz]")
 
 
