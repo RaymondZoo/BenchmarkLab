@@ -186,10 +186,11 @@ canvas.mpl_connect("key_press_event", key_press_handler)
 
 button_quit = Button(master=root, text="Quit", command=root.quit)
 
-def update_graph(new_val):
+new_val = DoubleVar()
+def update_graph():
     # update data
     global avg_duration
-    avg_duration = float(new_val)
+    avg_duration = float(new_val.get())
     raw_data = read_file()
     proc_data = process_data(raw_data)
     graph_data(proc_data)
@@ -197,16 +198,23 @@ def update_graph(new_val):
     # required to update canvas and attached toolbar!
     canvas.draw()
 
-slider_update = Scale(root, from_=0, to=6000000, orient=HORIZONTAL, command=update_graph, label="Scale Graph (ms)")
+#Initialize a Label to display the User Input
+label = Label(root, text = "Time Interval (ms)", font = ("Arial 10 bold"))
 
+#Create an Entry widget to accept User Input
+entry = Entry(root, width = 40, textvariable = new_val)
+
+button_calc = Button(root, text = "Calculate", command = update_graph)
 
 # Packing order is important. Widgets are processed sequentially and if there
 # is no space left, because the window is too small, they are not displayed.
 # The canvas is rather flexible in its size, so we pack it last which makes
 # sure the UI controls are displayed as long as possible.
-button_quit.pack(side=BOTTOM)
-slider_update.pack(side=BOTTOM)
-toolbar.pack(side=BOTTOM, fill=X)
-canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+button_quit.pack(side = BOTTOM)
+button_calc.pack(side = BOTTOM)
+entry.pack(side = BOTTOM)
+label.pack(side = BOTTOM)
+toolbar.pack(side = BOTTOM, fill = X)
+canvas.get_tk_widget().pack(side = TOP, fill = BOTH, expand = 1)
 
 mainloop()
