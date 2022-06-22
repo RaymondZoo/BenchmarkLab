@@ -96,10 +96,11 @@ def process_data(raw_data):
 
     # Graph raw data if avg_duration is not specified;
     # Otherwise, get average of time interval
+    proc_press = [abs(float(x)) for x in raw_data[1]]
     if avg_duration == 0:
-        return [proc_time, raw_data[1]]
+        return [proc_time, proc_press]
     else:
-        return get_avg_data([proc_time, raw_data[1]], avg_duration)
+        return get_avg_data([proc_time, proc_press], avg_duration)
 
 def get_avg_data(unscaled_data, avg_duration):
     # Variables
@@ -153,7 +154,7 @@ def graph_data(proc_data):
     proc_data = change_graph_units(proc_data, unit_in_ms)
     
     ax.clear()
-    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
+    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', label = "Control")
     
     ax.set_xlabel('Time (' + unit_name + ')')
     ax.set_ylabel('Pressure (psi)')

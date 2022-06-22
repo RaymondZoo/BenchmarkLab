@@ -92,10 +92,12 @@ def process_data(raw_data):
 
     # Graph raw data if avg_duration is not specified;
     # Otherwise, get average of time interval
+    proc_press = [float(x) for x in raw_data[1]]
     if avg_duration == 0:
-        return [proc_time, raw_data[1]]
+        return [proc_time, proc_press]
     else:
-        return get_avg_data([proc_time, raw_data[1]], avg_duration)
+        return get_avg_data([proc_time, proc_press], avg_duration)
+
 
 def get_avg_data(unscaled_data, avg_duration):
     # Variables
