@@ -17,6 +17,8 @@ root.wm_title("Embedding in Tk")
 fig = Figure(figsize=(5, 4), dpi=100)
 t = np.arange(0, 3, .01)
 ax = fig.add_subplot()
+raw_time = []
+press = []
 # Scale data by this amount of time
 avg_duration = 0
 
@@ -25,8 +27,7 @@ def read_line_inputs(str_read):
     # Prerequisite: ONLY PUT IN DATA THAT HAS NUMBERS
     col = 0
     new_data = True
-    raw_time = []
-    press = []
+    prev_size = len(raw_time)
     
     # Takes a line from a CSV input, reads it
     # Appends the data to the proper list
@@ -53,7 +54,8 @@ def read_line_inputs(str_read):
                 else:
                     # Adding to current data string
                     press[len(raw_time) - 1] += character
-    press[len(press) - 1] = float(press[len(press) - 1])
+    if prev_size != len(raw_time):
+        press[len(press) - 1] = float(press[len(press) - 1])
     return [raw_time, press]
 
 # ***** READING CSV FILE *****
