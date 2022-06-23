@@ -187,8 +187,6 @@ canvas.mpl_connect(
     "key_press_event", lambda event: print(f"you pressed {event.key}"))
 canvas.mpl_connect("key_press_event", key_press_handler)
 
-button_quit = Button(master=root, text="Quit", command=root.quit)
-
 
 new_val = DoubleVar()
 def update_graph():
@@ -214,7 +212,6 @@ button_calc = Button(root, text = "Calculate", command = update_graph)
 # is no space left, because the window is too small, they are not displayed.
 # The canvas is rather flexible in its size, so we pack it last which makes
 # sure the UI controls are displayed as long as possible.
-button_quit.pack(side = BOTTOM)
 button_calc.pack(side = BOTTOM)
 entry.pack(side = BOTTOM)
 label.pack(side = BOTTOM)
