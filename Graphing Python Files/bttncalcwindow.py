@@ -140,19 +140,20 @@ def graph_data(proc_data):
     # Change the units of the time automatically
     unit_in_ms = 0
     unit_name = "ms"
-    if proc_data[0][len(proc_data[0]) - 1] >= 14400000:
-        # Unit changed to hours
-        unit_name = "hr"
-        unit_in_ms = 3600000
-    elif proc_data[0][len(proc_data[0]) - 1] >= 1200000:
-        # Unit changed to minutes
-        unit_name = "min"
-        unit_in_ms = 60000
-    elif proc_data[0][len(proc_data[0]) - 1] >= 60000:
-        # Unit changed to seconds
-        unit_name = "s"
-        unit_in_ms = 1000
-    proc_data = change_graph_units(proc_data, unit_in_ms)
+    if len(proc_data[0]) > 0:
+        if proc_data[0][len(proc_data[0]) - 1] >= 86400000:
+            # Unit changed to hours
+            unit_name = "hr"
+            unit_in_ms = 3600000
+        elif proc_data[0][len(proc_data[0]) - 1] >= 1200000:
+            # Unit changed to minutes
+            unit_name = "min"
+            unit_in_ms = 60000
+        elif proc_data[0][len(proc_data[0]) - 1] >= 60000:
+            # Unit changed to seconds
+            unit_name = "s"
+            unit_in_ms = 1000
+        proc_data = change_graph_units(proc_data, unit_in_ms)
     
     ax.clear()
     ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', label = "Control")
