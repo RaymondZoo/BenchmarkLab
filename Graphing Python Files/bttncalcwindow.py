@@ -168,9 +168,9 @@ def change_graph_units(proc_data, unit_in_ms):
             proc_data[0][i] = proc_data[0][i] / unit_in_ms
     return proc_data
 
-raw_data = read_file()
-proc_data = process_data(raw_data)
-graph_data(proc_data)
+# raw_data = read_file()
+# proc_data = process_data(raw_data)
+# graph_data(proc_data)
 
 # SHOW CANVAS ON FIGURE
 canvas = FigureCanvasTkAgg(fig, master=root)  # A tk.DrawingArea.
@@ -191,8 +191,7 @@ def update_graph():
     # update data
     global avg_duration
     avg_duration = float(new_val.get())
-    raw_data = read_file()
-    proc_data = process_data(raw_data)
+    proc_data = process_data([raw_time, press])
     graph_data(proc_data)
 
     # required to update canvas and attached toolbar!
