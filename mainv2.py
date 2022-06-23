@@ -7,7 +7,7 @@ import serial
 import datetime
 import time
 import os.path
-import AutomaticGraphingProgram as AGP
+import bttncalcwindow as AGP
 
 from tkinter import *
 from tkinter import messagebox
@@ -207,6 +207,7 @@ def new_File(b): #when button clicked
         popupwin()
         global myLog
         myLog.delete(0, END)
+        AGP.clear_data()
     else:
         messagebox.showinfo('Warning', 'You must pause or stop the program')
 
@@ -420,15 +421,22 @@ def read():
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
 
+            myLog.insert(END, str(datetime.datetime.now())+","+ data)
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
+                myLog.see(END)
+
             raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
             proc_data = AGP.process_data(raw_data)
             AGP.graph_data(proc_data)
+            #AGP.canvas.draw()
 
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
-                #myLog.see(END)
+                myLog.see(END)
 
 
     #label for time at the top
