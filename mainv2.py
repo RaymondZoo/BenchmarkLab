@@ -515,7 +515,7 @@ def read():
                         subject= csvnamed + ' Pressure Warning',
                         html_content='The Pressure Limit Parameter is '+paramPLimit+". The PressureOUT was "+PressureOUT+". The data line was " +str(datetime.datetime.now())+","+ data )
                     try:
-                        sg = SendGridAPIClient(os.environ.get('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'))
+                        sg = SendGridAPIClient(os.environ.get('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')) #hide this
                         response = sg.send(message)
                         print(response.status_code)
                         print(response.body)
