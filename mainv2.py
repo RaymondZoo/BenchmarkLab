@@ -158,6 +158,7 @@ def play_click(b): #when button clicked
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
 
+        #i should make a function for every single time i use these 7 lines of code
         file.write(str(datetime.datetime.now())+", START \n")  # write data with a newline
         print(str(datetime.datetime.now())+", START \n")
         myLog.insert(END, str(datetime.datetime.now())+", START \n")
@@ -179,7 +180,6 @@ def pause_click(b): #when button clicked
     global root
 
     file = open(csvnamed, "a") #was probably being weird before b/c I referenced the global file variable each time, maybe opening the same file twice which meant the "PAUSE" was sent way later
-
     file.write(str(datetime.datetime.now())+", PAUSE \n")
     print(str(datetime.datetime.now())+", PAUSE \n")
     myLog.insert(END, str(datetime.datetime.now())+", PAUSE \n")
@@ -288,12 +288,12 @@ def new_warningSetup(b): #when button clicked
         popupwin()
     else:
         if reading == False:
-            newSD = True
+            warningSetup == False
             popupwin()
             file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # write data with a newline
-            print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
-            myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            file.write(str(datetime.datetime.now())+", NEW WARNING SETUP \n")  # write data with a newline
+            print(str(datetime.datetime.now())+", NEW WARNING SETUP \n")
+            myLog.insert(END, str(datetime.datetime.now())+", NEW WARNING SETUP \n")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
@@ -496,11 +496,8 @@ def read():
         getData = str(ser.readline())
         data = getData[2:-5]
         if reading:
-            file = open(csvnamed, "a")
             global scroll_bar
             global myLog
-            file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
-            print(str(datetime.datetime.now())+","+ data + "\n")
 
             # Indices:
             try:
@@ -531,6 +528,9 @@ def read():
             #AGP.graph_data(proc_data)
             #AGP.canvas.draw() do not uncomment this
 
+            file = open(csvnamed, "a")
+            file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
+            print(str(datetime.datetime.now())+","+ data + "\n")
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
