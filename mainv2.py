@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+import email
 from email.contentmanager import raw_data_manager
 from lib2to3.pgen2.token import RIGHTSHIFT, RIGHTSHIFTEQUAL
 from pickletools import read_string1
@@ -7,7 +8,11 @@ import serial
 import datetime
 import time
 import os.path
-import bttncalcwindow as AGP
+import AutomaticGraphingProgram as AGP
+
+import os
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 from tkinter import *
 from tkinter import messagebox
@@ -74,6 +79,10 @@ newSensorDelay = Button(root, height = 4, width = 28, bg  ="pink", text = "New S
 newSensorDelay.pack()
 newSensorDelay.place(x = 675, y = 460)
 
+newWarningSetup = Button(root, height = 4, width = 28, bg  ="teal", text = "New Warning Setup", command=lambda: new_warningSetup(newWarningSetup)) #makes button
+newWarningSetup.pack()
+newWarningSetup.place(x = 675, y = 550)
+
 """
 graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
 graphButton.pack()
@@ -116,6 +125,10 @@ newFilebool = True
 global newSD
 newSD = True
 global raw_data
+global warningSetup
+warningSetup = False
+global emailWarning
+global paramPLimit
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
@@ -263,6 +276,29 @@ def new_sensorDelay(b): #when button clicked
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
+def new_warningSetup(b): #when button clicked
+    global reading
+    global root
+    global newSD
+    global conditions
+    global Autoscrollvar
+    global scroll_bar
+    global myLog
+    if conditions == False: 
+        popupwin()
+    else:
+        if reading == False:
+            newSD = True
+            popupwin()
+            file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # write data with a newline
+            print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            scroll_bar.config(command = myLog.yview)
+            if Autoscrollvar.get() == 1:
+                myLog.yview(END)
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
 
 #def drawGraph(b): #when button clicked
     """
@@ -308,14 +344,19 @@ def close_win(top):
     global inputCOM #COM entry box
     global fName #fileName entry box
     global dName #sensor delay entry box
+    global eName #email entry box
+    global pName #pressure limit parameter entry box
 
     global csvnamed #name of CSV file
     global arduino_port # serial port of Arduino
     global sensorDelay # delay in milliseconds
+    global emailWarning #actual email
+    global paramPLimit #actual parameter
 
     global COMset #has the COM been set already or not (because you cannot change the COM once the program has started)
     global newSD #if we have clicked the newSD button
     global newFilebool #if we have clicked the newFile button
+    global warningSetup # has the warning system been setup yet
 
     if COMset == False:
         arduino_port = inputCOM.get()
@@ -323,8 +364,32 @@ def close_win(top):
         csvnamed = fName.get()
     if newSD == True:  
         sensorDelay = dName.get()
+    if warningSetup == False:
+        emailWarning = eName.get()
+        paramPLimit = pName.get()
+        message = Mail(
+            from_email='benchmarklabbot1@gmail.com',
+            to_emails = emailWarning,
+            subject= csvnamed+' Pressure Warning',
+            html_content=' Initialization.' )
+        try:
+            sg = SendGridAPIClient(os.environ.get('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'))
+            response = sg.send(message)
+            print(response.status_code)
+            print(response.body)
+            print(response.headers)
+        except Exception as e:
+            print(e.message) #not sure how this part works
 
-    if (arduino_port != "" or COMset == True) and (csvnamed!= ""or newFilebool == False) and (sensorDelay != "" or newSD == False):
+    #this checks that the variable either has a value or isn't needed
+    tempbool = (arduino_port != "" or COMset == True)
+    tempbool1 = (csvnamed!= ""or newFilebool == False)
+    tempbool2 = (sensorDelay != "" or newSD == False)
+    tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == False)
+
+
+    if tempbool and tempbool1 and tempbool2 and tempbool3:
+        
         baud = 9600  # arduino uno runs at 9600 baud
         replace = ""
         canCloseBool = True
@@ -340,6 +405,7 @@ def close_win(top):
         if newFilebool == True:
             if os.path.exists(fName.get()):
                 replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
+        
 
             #print(replace)
             if replace == "" or replace == "yes":
@@ -369,6 +435,9 @@ def popupwin():
 
    top.grab_set()
    global COMset
+   global newFilebool
+   global newSD
+   global warningSetup
    
    if COMset == False:
         #Create an Entry Widget in the Toplevel window
@@ -395,11 +464,23 @@ def popupwin():
         dName.place(x = 375, y = 90)
         dName.insert(0, "1000")
 
-   
+   if warningSetup == False:
+        emailName = Label(top, text="Email: ")
+        emailName.place(x = 10, y = 130)
+        global eName
+        eName = Entry(top, width= 25,  font = ("Verdana", 15))
+        eName.place(x = 375, y = 130)
+        
+        paramName = Label(top, text="Pressure Limit in psi: ")
+        paramName.place(x = 10, y = 170)
+        global pName
+        pName = Entry(top, width= 25,  font = ("Verdana", 15))
+        pName.place(x = 375, y = 170)
+        
 
    #Create a Button Widget in the Toplevel Window
    button= Button(top, text="Ok", command=lambda:close_win(top), width = 5)
-   button.place(x = 660, y = 140)
+   button.place(x = 660, y = 200)
     
 def read():
     global root
@@ -421,22 +502,39 @@ def read():
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
             print(str(datetime.datetime.now())+","+ data + "\n")
 
+            # Indices:
+            try:
+                PressureIN = data[:data.index(",")]
+                PressureOUT = data[data.index(",")+1 : data.index(",", data.index(",")+1)]
+                PressureDIFF = data[data.index(",", data.index(",")+1)+1:]
+            except:
+                print("Data line is incomplete: "+data)
+            else:
+                #send email warning
+                if float(PressureOUT)>float(paramPLimit):
+                    message = Mail(
+                        from_email='benchmarklabbot1@gmail.com',
+                        to_emails = emailWarning,
+                        subject= csvnamed + ' Pressure Warning',
+                        html_content='The Pressure Limit Parameter is '+paramPLimit+". The PressureOUT was "+PressureOUT+". The data line was " +str(datetime.datetime.now())+","+ data )
+                    try:
+                        sg = SendGridAPIClient(os.environ.get('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'))
+                        response = sg.send(message)
+                        print(response.status_code)
+                        print(response.body)
+                        print(response.headers)
+                    except Exception as e:
+                        print(e.message) #not sure how this part works
+
+            #raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
+            #proc_data = AGP.process_data(raw_data)
+            #AGP.graph_data(proc_data)
+            #AGP.canvas.draw() do not uncomment this
+
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
-                myLog.see(END)
-
-            raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
-            proc_data = AGP.process_data(raw_data)
-            AGP.graph_data(proc_data)
-            #AGP.canvas.draw()
-
-            myLog.insert(END, str(datetime.datetime.now())+","+ data)
-            scroll_bar.config(command = myLog.yview)
-            if Autoscrollvar.get() == 1:
-                myLog.yview(END)
-                myLog.see(END)
 
 
     #label for time at the top
