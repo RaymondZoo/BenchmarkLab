@@ -50,7 +50,7 @@ void loop() //loop routine runs over and over again forever
   if (Serial.available()) // if there is data coming
   {
     String command = Serial.readStringUntil('\n'); // read string until meet newline character
-    Serial.println(command);
+    //Serial.println(command);
     command.trim();
     /*
     if (command.equals("recalibrate"))
