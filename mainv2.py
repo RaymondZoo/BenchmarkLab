@@ -1,14 +1,7 @@
-from asyncio.windows_events import NULL
-import email
-from email.contentmanager import raw_data_manager
-from lib2to3.pgen2.token import RIGHTSHIFT, RIGHTSHIFTEQUAL
-from pickletools import read_string1
-import random
 import serial
 import datetime
-import time
 import os.path
-import AutomaticGraphingProgram as AGP
+#import AutomaticGraphingProgram as AGP
 
 import os
 from sendgrid import SendGridAPIClient
@@ -21,8 +14,7 @@ from tkinter import messagebox
 
 #next:
 #backburner:
-#maybe add diagram for fun
-#edit exisiting file button, no for now bc idt they need this
+#maybe add diagram
 
 
 #set up frame
@@ -124,7 +116,7 @@ global newFilebool
 newFilebool = True
 global newSD
 newSD = True
-global raw_data
+#global raw_data
 global warningSetup
 warningSetup = False
 global emailWarning
@@ -147,7 +139,7 @@ def play_click(b): #when button clicked
         reading = True
         global myLog
 
-        file = open(csvnamed, "a")
+        #file = open(csvnamed, "a")
 
         if newStart:
             file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
@@ -159,7 +151,7 @@ def play_click(b): #when button clicked
                 myLog.yview(END)
 
         #i should make a function for every single time i use these 7 lines of code
-        file.write(str(datetime.datetime.now())+", START \n")  # write data with a newline
+        file.write(str(datetime.datetime.now())+", START \n") # replace with function
         print(str(datetime.datetime.now())+", START \n")
         myLog.insert(END, str(datetime.datetime.now())+", START \n")
         scroll_bar.config(command = myLog.yview)
@@ -179,8 +171,9 @@ def pause_click(b): #when button clicked
     global scroll_bar
     global root
 
-    file = open(csvnamed, "a") #was probably being weird before b/c I referenced the global file variable each time, maybe opening the same file twice which meant the "PAUSE" was sent way later
-    file.write(str(datetime.datetime.now())+", PAUSE \n")
+    #file = open(csvnamed, "a")
+    #was being weird because you don't need to open the file over and over again to write in it.
+    file.write(str(datetime.datetime.now())+", PAUSE \n") # replace with function
     print(str(datetime.datetime.now())+", PAUSE \n")
     myLog.insert(END, str(datetime.datetime.now())+", PAUSE \n")
     scroll_bar.config(command = myLog.yview)  
@@ -199,9 +192,9 @@ def stop_click(b): #when button clicked
     global scroll_bar
     global myLog
 
-    file = open(csvnamed, "a")
+    #file = open(csvnamed, "a")
 
-    file.write(str(datetime.datetime.now())+", STOP \n")  # write data with a newline
+    file.write(str(datetime.datetime.now())+", STOP \n")  # replace with function
     print(str(datetime.datetime.now())+", STOP \n")
     myLog.insert(END, str(datetime.datetime.now())+", STOP \n")
     scroll_bar.config(command = myLog.yview)
@@ -218,9 +211,8 @@ def new_File(b): #when button clicked
     if reading == False:
         newFilebool = True
         popupwin()
-        global myLog
-        myLog.delete(0, END)
-        AGP.clear_data()
+        #myLog.delete(0, END)
+        #AGP.clear_data()
     else:
         messagebox.showinfo('Warning', 'You must pause or stop the program')
 
@@ -240,8 +232,8 @@ def recal(b): #when button clicked
 
             global csvnamed 
 
-            file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", RECALIBRATE \n")  # write data with a newline
+            #file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", RECALIBRATE \n")  # replace with function
             print(str(datetime.datetime.now())+", RECALIBRATE \n")
             myLog.insert(END, str(datetime.datetime.now())+", RECALIBRATE \n")
             scroll_bar.config(command = myLog.yview)
@@ -266,8 +258,8 @@ def new_sensorDelay(b): #when button clicked
         if reading == False:
             newSD = True
             popupwin()
-            file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # write data with a newline
+            #file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # replace with function
             print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
             myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
             scroll_bar.config(command = myLog.yview)
@@ -279,7 +271,7 @@ def new_sensorDelay(b): #when button clicked
 def new_warningSetup(b): #when button clicked
     global reading
     global root
-    global newSD
+    global warningSetup
     global conditions
     global Autoscrollvar
     global scroll_bar
@@ -288,10 +280,10 @@ def new_warningSetup(b): #when button clicked
         popupwin()
     else:
         if reading == False:
-            warningSetup == False
+            warningSetup = False
             popupwin()
-            file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", NEW WARNING SETUP \n")  # write data with a newline
+            #file = open(csvnamed, "a") 
+            file.write(str(datetime.datetime.now())+", NEW WARNING SETUP \n")  # replace with function
             print(str(datetime.datetime.now())+", NEW WARNING SETUP \n")
             myLog.insert(END, str(datetime.datetime.now())+", NEW WARNING SETUP \n")
             scroll_bar.config(command = myLog.yview)
@@ -378,6 +370,7 @@ def close_win(top):
             print(response.status_code)
             print(response.body)
             print(response.headers)
+            warningSetup = True
         except Exception as e:
             print(e.message) #not sure how this part works
 
@@ -385,7 +378,7 @@ def close_win(top):
     tempbool = (arduino_port != "" or COMset == True)
     tempbool1 = (csvnamed!= ""or newFilebool == False)
     tempbool2 = (sensorDelay != "" or newSD == False)
-    tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == False)
+    tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == True)
 
 
     if tempbool and tempbool1 and tempbool2 and tempbool3:
@@ -413,8 +406,13 @@ def close_win(top):
                 file = open(fName.get(), "w") # w for new file and a for add to existing file
                 print("Created file")
                 newFilebool = False
+                myLog.delete(0, END)
+                #AGP.clear_data()
+                global newStart
+                newStart = True
             else:
                 canCloseBool = False
+        
 
         if canCloseBool == True:
             conditions = True
@@ -488,7 +486,7 @@ def read():
         global reading
         global csvnamed
         global ser
-        global raw_data
+        #global raw_data
         global Autoscrollvar
         global scroll_bar
         global myLog
@@ -508,12 +506,12 @@ def read():
                 print("Data line is incomplete: "+data)
             else:
                 #send email warning
-                if float(PressureOUT)>float(paramPLimit):
+                if float(PressureDIFF)>float(paramPLimit):
                     message = Mail(
                         from_email='benchmarklabbot1@gmail.com',
                         to_emails = emailWarning,
                         subject= csvnamed + ' Pressure Warning',
-                        html_content='The Pressure Limit Parameter is '+paramPLimit+". The PressureOUT was "+PressureOUT+". The data line was " +str(datetime.datetime.now())+","+ data )
+                        html_content='The Pressure Limit Parameter is '+paramPLimit+". The Pressure Difference was "+PressureDIFF+". The data line was " +str(datetime.datetime.now())+","+ data )
                     try:
                         sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY')) #hide this
                         response = sg.send(message)
@@ -528,8 +526,8 @@ def read():
             #AGP.graph_data(proc_data)
             #AGP.canvas.draw() do not uncomment this
 
-            file = open(csvnamed, "a")
-            file.write(str(datetime.datetime.now())+","+ data + "\n")  # write data with a newline
+            #file = open(csvnamed, "a")
+            file.write(str(datetime.datetime.now())+","+ data + "\n")  # replace with function
             print(str(datetime.datetime.now())+","+ data + "\n")
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
