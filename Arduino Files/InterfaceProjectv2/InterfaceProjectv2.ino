@@ -31,7 +31,7 @@ void setup() //setup routine, runs once when system turned on or reset
   lcd.backlight();
 
 
-  pinMode(13, OUTPUT); // set the digital pin as output:
+  //pinMode(13, OUTPUT); // set the digital pin as output:
   //Serial.print(dataLabel1);
   //Serial.print(",");
   //Serial.print(dataLabel2);
