@@ -1,7 +1,7 @@
 import serial
 import datetime
 import os.path
-#import AutomaticGraphingProgram as AGP
+import AutomaticGraphingProgram as AGP
 
 import os
 from sendgrid import SendGridAPIClient
@@ -22,11 +22,9 @@ from tkinter import messagebox
 global root
 root = Tk()
 root.title('Flow Loop Testing Interface')
-root.resizable(0, 0)
-myCanvas = Canvas(root, width = 900, height = 600, bg = "White")
+root.resizable()
+myCanvas = Canvas(root, width = 900, height = 800, bg = "White")
 myCanvas.pack()
-
-
 
 #commented out right now because PyInstaller doesn't automatically include image dependencies
 #we can probably include it later
@@ -83,8 +81,8 @@ graphButton.place(x = 675, y = 550)"""
 global Autoscrollvar
 Autoscrollvar = IntVar()
 
-Autoscroll = Checkbutton(root, height = 2, width = 10, text = "Autoscroll", variable = Autoscrollvar, onvalue = 1, offvalue = 0) #makes button
-Autoscroll.place(x = 530, y = 325)
+Autoscroll = Checkbutton(root, height = 2, width = 9, text = "Autoscroll", variable = Autoscrollvar, onvalue = 1, offvalue = 0) #makes button
+Autoscroll.place(x = 532, y = 580)
 
 Autoscroll.select()
 
@@ -92,11 +90,11 @@ Autoscroll.select()
 
 frameScroll = Frame(root)
 frameScroll.place(x = 18, y = 60)
-frameScroll.config(height = 10, width = 10)
+frameScroll.config(height = 20, width = 10)
 global scroll_bar
 scroll_bar = Scrollbar(frameScroll)
 global myLog
-myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 15), width= 45, height= 10)
+myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 15), width= 45, height= 20)
 myLog.pack( side = LEFT, fill = BOTH, expand= True )
 scroll_bar.pack( side = RIGHT, fill = Y, expand= True)
 #myLog.place(x = 0, y= 0)
@@ -143,7 +141,7 @@ def play_click(b): #when button clicked
 
         if newStart:
             file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
-            print("Time,PressureIn,PressureOut,PressureDifference\n")
+            #print("Time,PressureIn,PressureOut,PressureDifference\n")
             newStart = False
             myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
             scroll_bar.config(command = myLog.yview)
@@ -152,7 +150,7 @@ def play_click(b): #when button clicked
 
         #i should make a function for every single time i use these 7 lines of code
         file.write(str(datetime.datetime.now())+", START \n") # replace with function
-        print(str(datetime.datetime.now())+", START \n")
+        #print(str(datetime.datetime.now())+", START \n")
         myLog.insert(END, str(datetime.datetime.now())+", START \n")
         scroll_bar.config(command = myLog.yview)
         if Autoscrollvar.get() == 1:
@@ -174,7 +172,7 @@ def pause_click(b): #when button clicked
     #file = open(csvnamed, "a")
     #was being weird because you don't need to open the file over and over again to write in it.
     file.write(str(datetime.datetime.now())+", PAUSE \n") # replace with function
-    print(str(datetime.datetime.now())+", PAUSE \n")
+    #print(str(datetime.datetime.now())+", PAUSE \n")
     myLog.insert(END, str(datetime.datetime.now())+", PAUSE \n")
     scroll_bar.config(command = myLog.yview)  
     if Autoscrollvar.get() == 1:
@@ -195,7 +193,7 @@ def stop_click(b): #when button clicked
     #file = open(csvnamed, "a")
 
     file.write(str(datetime.datetime.now())+", STOP \n")  # replace with function
-    print(str(datetime.datetime.now())+", STOP \n")
+    #print(str(datetime.datetime.now())+", STOP \n")
     myLog.insert(END, str(datetime.datetime.now())+", STOP \n")
     scroll_bar.config(command = myLog.yview)
     if Autoscrollvar.get() == 1:
@@ -234,7 +232,7 @@ def recal(b): #when button clicked
 
             #file = open(csvnamed, "a") 
             file.write(str(datetime.datetime.now())+", RECALIBRATE \n")  # replace with function
-            print(str(datetime.datetime.now())+", RECALIBRATE \n")
+            #print(str(datetime.datetime.now())+", RECALIBRATE \n")
             myLog.insert(END, str(datetime.datetime.now())+", RECALIBRATE \n")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
@@ -260,7 +258,7 @@ def new_sensorDelay(b): #when button clicked
             popupwin()
             #file = open(csvnamed, "a") 
             file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # replace with function
-            print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
+            #print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
             myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
@@ -284,7 +282,7 @@ def new_warningSetup(b): #when button clicked
             popupwin()
             #file = open(csvnamed, "a") 
             file.write(str(datetime.datetime.now())+", NEW WARNING SETUP \n")  # replace with function
-            print(str(datetime.datetime.now())+", NEW WARNING SETUP \n")
+            #print(str(datetime.datetime.now())+", NEW WARNING SETUP \n")
             myLog.insert(END, str(datetime.datetime.now())+", NEW WARNING SETUP \n")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
@@ -372,7 +370,7 @@ def close_win(top):
             print(response.headers)
             warningSetup = True
         except Exception as e:
-            print(e.message) #not sure how this part works
+            print(e) #not sure how this part works
 
     #this checks that the variable either has a value or isn't needed
     tempbool = (arduino_port != "" or COMset == True)
@@ -463,13 +461,13 @@ def popupwin():
         dName.insert(0, "1000")
 
    if warningSetup == False:
-        emailName = Label(top, text="Email: ")
+        emailName = Label(top, text="Email (for warnings): ")
         emailName.place(x = 10, y = 130)
         global eName
         eName = Entry(top, width= 25,  font = ("Verdana", 15))
         eName.place(x = 375, y = 130)
         
-        paramName = Label(top, text="Pressure Limit in psi: ")
+        paramName = Label(top, text="Pressure Limit in psi (for email warnings): ")
         paramName.place(x = 10, y = 170)
         global pName
         pName = Entry(top, width= 25,  font = ("Verdana", 15))
@@ -519,16 +517,17 @@ def read():
                         print(response.body)
                         print(response.headers)
                     except Exception as e:
-                        print(e.message) #not sure how this part works
+                        print(e) 
 
-            #raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
-            #proc_data = AGP.process_data(raw_data)
-            #AGP.graph_data(proc_data)
-            #AGP.canvas.draw() do not uncomment this
+            #graphing data
+            raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
+            proc_data = AGP.process_data(raw_data)
+            AGP.graph_data(proc_data)
+            #AGP.canvas.draw() do not uncomment this*****
 
             #file = open(csvnamed, "a")
             file.write(str(datetime.datetime.now())+","+ data + "\n")  # replace with function
-            print(str(datetime.datetime.now())+","+ data + "\n")
+            #print(str(datetime.datetime.now())+","+ data + "\n")
             myLog.insert(END, str(datetime.datetime.now())+","+ data)
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
@@ -542,7 +541,7 @@ def read():
     #label for filename under the log
     global labelFile
     labelFile = Label(root, text = csvnamed, font = ("Verdana", 20))
-    labelFile.place(x = 100, y = 400)
+    labelFile.place(x = 100, y = 600)
     
     global sensorDelay
     root.grab_set()

@@ -6,7 +6,7 @@ const float pressureIn = A0; //select the analog input pin for the first pressur
 const float pressureOut = A3; //select the analog input pin for the second pressure transducer
 const float pressureZero = 102.4; //analog reading of pressure transducer at 0psi, should be 102.4 from formula conversion
 const float pressureMax = 921.6; //analog reading of pressure transducer at 30psi
-const int pressuretransducermaxPSI = 30; //psi value of transducer being used
+int pressuretransducermaxPSI = 30; //psi value of transducer being used
 const int baudRate = 9600; //constant integer to set the baud rate for serial monitor
 int sensorreadDelay = 1000; //integer to set the sensor read delay in milliseconds
 
@@ -18,10 +18,10 @@ float pressureDifference = 0; //variable to store the value coming from the pres
 float pressureZeroI;
 float pressureZeroO;
 
-LiquidCrystal_I2C lcd(0x27, 16, 2); //sets the LCD I2C communication address; format(address, columns, rows)
+const LiquidCrystal_I2C lcd(0x27, 16, 2); //sets the LCD I2C communication address; format(address, columns, rows)
 
-String dataLabel1 = "PressureIn";
-String dataLabel2 = "PressureOut";
+const String dataLabel1 = "PressureIn";
+const String dataLabel2 = "PressureOut";
 
 void setup() //setup routine, runs once when system turned on or reset
 {
@@ -31,7 +31,7 @@ void setup() //setup routine, runs once when system turned on or reset
   lcd.backlight();
 
 
-  pinMode(13, OUTPUT); // set the digital pin as output:
+  //pinMode(13, OUTPUT); // set the digital pin as output:
   //Serial.print(dataLabel1);
   //Serial.print(",");
   //Serial.print(dataLabel2);
