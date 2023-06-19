@@ -1,7 +1,7 @@
 import serial
 import datetime
 import os.path
-import AutomaticGraphingProgram as AGP
+#import AutomaticGraphingProgram as AGP
 
 import os
 from sendgrid import SendGridAPIClient
@@ -90,7 +90,7 @@ Autoscroll.select()
 
 frameScroll = Frame(root)
 frameScroll.place(x = 18, y = 60)
-frameScroll.config(height = 20, width = 10)
+frameScroll.config(height = 20, width = 18)
 global scroll_bar
 scroll_bar = Scrollbar(frameScroll)
 global myLog
@@ -129,98 +129,49 @@ def play_click(b): #when button clicked
     if conditions == False: 
         popupwin()
     else:
-        global ser
         global newStart
-        global csvnamed
         global Autoscrollvar
         global scroll_bar
         reading = True
         global myLog
-
-        #file = open(csvnamed, "a")
+        global file
 
         if newStart:
-            file.write("Time,PressureIn,PressureOut,PressureDifference\n")  # write data with a newline
-            #print("Time,PressureIn,PressureOut,PressureDifference\n")
+            file.write("Time,PressureIn,PressureOut,PressureDifference\n")  
             newStart = False
             myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
 
-        #i should make a function for every single time i use these 7 lines of code
-        file.write(str(datetime.datetime.now())+", START \n") # replace with function
-        #print(str(datetime.datetime.now())+", START \n")
-        myLog.insert(END, str(datetime.datetime.now())+", START \n")
-        scroll_bar.config(command = myLog.yview)
-        if Autoscrollvar.get() == 1:
-            myLog.yview(END)
-        
-        
-    #reading = True
+        buttonHelper("START")
         
 def pause_click(b): #when button clicked
     global reading
     reading = False
-    global ser
-    global csvnamed
-    global myLog
-    global Autoscrollvar
-    global scroll_bar
-    global root
 
-    #file = open(csvnamed, "a")
-    #was being weird because you don't need to open the file over and over again to write in it.
-    file.write(str(datetime.datetime.now())+", PAUSE \n") # replace with function
-    #print(str(datetime.datetime.now())+", PAUSE \n")
-    myLog.insert(END, str(datetime.datetime.now())+", PAUSE \n")
-    scroll_bar.config(command = myLog.yview)  
-    if Autoscrollvar.get() == 1:
-        myLog.yview(END)
+    buttonHelper("PAUSE")
 
 def stop_click(b): #when button clicked
-    global root
     global reading
     reading = False
-    global ser
 
-    global csvnamed
-
-    global Autoscrollvar
-    global scroll_bar
-    global myLog
-
-    #file = open(csvnamed, "a")
-
-    file.write(str(datetime.datetime.now())+", STOP \n")  # replace with function
-    #print(str(datetime.datetime.now())+", STOP \n")
-    myLog.insert(END, str(datetime.datetime.now())+", STOP \n")
-    scroll_bar.config(command = myLog.yview)
-    if Autoscrollvar.get() == 1:
-        myLog.yview(END)
+    buttonHelper("STOP")
     global newStart
     newStart = True
 
 def new_File(b): #when button clicked
-    global root
     global reading
     global newFilebool
-    global myLog
     if reading == False:
         newFilebool = True
         popupwin()
-        #myLog.delete(0, END)
-        #AGP.clear_data()
     else:
         messagebox.showinfo('Warning', 'You must pause or stop the program')
 
 def recal(b): #when button clicked
-    global root
     global reading
     global conditions
-    global Autoscrollvar
-    global scroll_bar
-    global myLog
     if conditions == False: 
         popupwin()
     else:
@@ -228,15 +179,7 @@ def recal(b): #when button clicked
             global ser
             ser.write("recalibrate".encode())
 
-            global csvnamed 
-
-            #file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", RECALIBRATE \n")  # replace with function
-            #print(str(datetime.datetime.now())+", RECALIBRATE \n")
-            myLog.insert(END, str(datetime.datetime.now())+", RECALIBRATE \n")
-            scroll_bar.config(command = myLog.yview)
-            if Autoscrollvar.get() == 1:
-                myLog.yview(END)
+            buttonHelper("RECALIBRATE")
             #messagebox.showinfo('Warning', 'Recalibrating may take a moment...')
             #time.sleep(5)
         else:
@@ -244,51 +187,47 @@ def recal(b): #when button clicked
 
 def new_sensorDelay(b): #when button clicked
     global reading
-    global root
     global newSD
     global conditions
-    global Autoscrollvar
-    global scroll_bar
-    global myLog
     if conditions == False: 
         popupwin()
     else:
         if reading == False:
             newSD = True
             popupwin()
-            #file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")  # replace with function
-            #print(str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
-            myLog.insert(END, str(datetime.datetime.now())+", NEW SENSOR DELAY \n")
-            scroll_bar.config(command = myLog.yview)
-            if Autoscrollvar.get() == 1:
-                myLog.yview(END)
+            buttonHelper("NEW SENSOR DELAY")
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
 def new_warningSetup(b): #when button clicked
     global reading
-    global root
     global warningSetup
     global conditions
-    global Autoscrollvar
-    global scroll_bar
-    global myLog
     if conditions == False: 
         popupwin()
     else:
         if reading == False:
             warningSetup = False
             popupwin()
-            #file = open(csvnamed, "a") 
-            file.write(str(datetime.datetime.now())+", NEW WARNING SETUP \n")  # replace with function
-            #print(str(datetime.datetime.now())+", NEW WARNING SETUP \n")
-            myLog.insert(END, str(datetime.datetime.now())+", NEW WARNING SETUP \n")
-            scroll_bar.config(command = myLog.yview)
-            if Autoscrollvar.get() == 1:
-                myLog.yview(END)
+            buttonHelper("NEW WARNING SETUP")
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
+
+def buttonHelper(string):
+    global myLog
+    global Autoscrollvar
+    global scroll_bar
+    global file
+    
+
+    # don't need to open over and over again with open(csvnamed, "a") because this will overwrite
+    file.write(str(datetime.datetime.now())+", "+string+" \n") 
+    #print(str(datetime.datetime.now())+", "+string+" \n")
+    myLog.insert(END, str(datetime.datetime.now())+", "+string+" \n")
+    scroll_bar.config(command = myLog.yview)
+    if Autoscrollvar.get() == 1:
+        myLog.yview(END)
+
 
 #def drawGraph(b): #when button clicked
     """
@@ -378,7 +317,6 @@ def close_win(top):
     tempbool2 = (sensorDelay != "" or newSD == False)
     tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == True)
 
-
     if tempbool and tempbool1 and tempbool2 and tempbool3:
         
         baud = 9600  # arduino uno runs at 9600 baud
@@ -404,7 +342,7 @@ def close_win(top):
                 file = open(fName.get(), "w") # w for new file and a for add to existing file
                 print("Created file")
                 newFilebool = False
-                myLog.delete(0, END)
+                myLog.delete(0, END) # this line and the one below used to be in newFileButton
                 #AGP.clear_data()
                 global newStart
                 newStart = True
@@ -416,11 +354,9 @@ def close_win(top):
             conditions = True
             top.destroy()
             top.grab_release()
-            Cover = Label(root, bg = "white", width = 75, height = 100)
-            Cover.place(x = 10, y = 400)
+            Cover = Label(root, bg = "white", width = 75, height = 60)
+            Cover.place(x = 0, y = 600)
 
-
-            
 
 #open the Popup Dialogue
 def popupwin():
@@ -520,18 +456,12 @@ def read():
                         print(e) 
 
             #graphing data
-            raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
-            proc_data = AGP.process_data(raw_data)
-            AGP.graph_data(proc_data)
+            #raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
+            #proc_data = AGP.process_data(raw_data)
+            #AGP.graph_data(proc_data)
             #AGP.canvas.draw() do not uncomment this*****
 
-            #file = open(csvnamed, "a")
-            file.write(str(datetime.datetime.now())+","+ data + "\n")  # replace with function
-            #print(str(datetime.datetime.now())+","+ data + "\n")
-            myLog.insert(END, str(datetime.datetime.now())+","+ data)
-            scroll_bar.config(command = myLog.yview)
-            if Autoscrollvar.get() == 1:
-                myLog.yview(END)
+            buttonHelper(data)
 
 
     #label for time at the top
@@ -541,7 +471,7 @@ def read():
     #label for filename under the log
     global labelFile
     labelFile = Label(root, text = csvnamed, font = ("Verdana", 20))
-    labelFile.place(x = 100, y = 600)
+    labelFile.place(x = 50, y = 600)
     
     global sensorDelay
     root.grab_set()
