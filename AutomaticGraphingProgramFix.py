@@ -2,9 +2,9 @@ from ast import Constant
 from datetime import datetime
 from tokenize import String
 from drawnow import *
-from matplotlib.figure import Figure
 import matplotlib as mpl
 mpl.use("Qt5Agg")
+#how i fixed it last time: pip install PyQt5
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
@@ -13,9 +13,6 @@ import csv
 raw_time = []
 press = []
 fig, ax = plt.subplots()
-#fig = plt.figure()
-#fig = Figure(figsize = (5, 4), dpi = 200)
-#ax = fig.add_subplot()
 
 # ***** READING LINE INPUTS *****
 def read_line_inputs(str_read):
@@ -40,7 +37,7 @@ def read_line_inputs(str_read):
                 else:
                     # Adding to current time string
                     raw_time[len(raw_time) - 1] += character
-            elif col == 3:
+            elif col == 1:
                 if new_data:
                     # New pressure data
                     press.append(character)
@@ -58,7 +55,7 @@ def read_file():
     press_f = []
 
     # Open file
-    file = open('ExampleCSVdata.csv', encoding = 'utf-8-sig')
+    file = open('testdata.csv', encoding = 'utf-8-sig')
     type(file)
     csvreader = csv.reader(file)
 
@@ -68,13 +65,14 @@ def read_file():
         # Add first row
         header.append(row)
         break
+
     # Gather data from CSV file
     lines = csvreader
     for row in lines:
-        #if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE " or row[1] == " STOP " or row[1] == " NEW WARNING SETUP "):
+        #if not(row[1] == " START " or row[1] == " RECALIBRATE " or  row[1] == " NEW SENSOR DELAY " or row[1] == " PAUSE "):
         if len(row) != 1:
             raw_time_f.append(row[0])
-            press_f.append(float(row[3]))
+            press_f.append(float(row[1]))
 
     # Finished reading a file
     file.close()
@@ -95,12 +93,10 @@ def process_data(raw_data):
 
     # Graph raw data if avg_duration is not specified;
     # Otherwise, get average of time interval
-    proc_press = [float(x) for x in raw_data[1]]
     if avg_duration == 0:
-        return [proc_time, proc_press]
+        return [proc_time, raw_data[1]]
     else:
-        return get_avg_data([proc_time, proc_press], avg_duration)
-
+        return get_avg_data([proc_time, raw_data[1]], avg_duration)
 
 def get_avg_data(unscaled_data, avg_duration):
     # Variables
@@ -162,7 +158,8 @@ def graph_data(proc_data):
     ax.grid(True)
     
     drawnow
-    #plt.show()
+    #fig.canvas.draw_idle()
+    #fig.canvas.start_event_loop(0.000001)
     plt.pause(.000001)
 
 def change_graph_units(proc_data, unit_in_ms):
@@ -177,8 +174,6 @@ def clear_data():
     raw_time = []
     global press
     press = []
-
-#FOR TESTING 
-#raw_data = read_file()
-#proc_data = process_data(raw_data)
-#graph_data(proc_data)
+# raw_data = read_file()
+# proc_data = process_data(raw_data)
+# graph_data(proc_data)
