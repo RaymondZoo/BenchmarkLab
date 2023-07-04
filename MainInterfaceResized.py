@@ -1,5 +1,6 @@
 import serial
 import datetime
+import time
 import os.path
 import AutomaticGraphingProgram as AGP
 
@@ -73,6 +74,10 @@ newWarningSetup = Button(root, height = 4, width = 28, bg  ="teal", text = "New 
 newWarningSetup.pack()
 newWarningSetup.place(x = 950, y = 670)
 
+newTransducer = Button(root, height = 4, width = 28, bg  ="orange", text = "New Transducer", command=lambda: new_transducer(newTransducer)) #makes button
+newTransducer.pack()
+newTransducer.place(x = 950, y = 780)
+
 """
 graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
 graphButton.pack()
@@ -109,16 +114,17 @@ conditions = False
 global COMset 
 COMset = False
 global sensorDelay
-sensorDelay = 1000
 global newFilebool
 newFilebool = True
 global newSD
 newSD = True
-#global raw_data
 global warningSetup
 warningSetup = False
 global emailWarning
 global paramPLimit
+global newPSI
+newPSI = True
+global transducerPSI
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
@@ -195,7 +201,19 @@ def new_sensorDelay(b): #when button clicked
         if reading == False:
             newSD = True
             popupwin()
-            buttonHelper("NEW SENSOR DELAY")
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
+
+def new_transducer(b): #when button clicked
+    global reading
+    global newPSI
+    global conditions
+    if conditions == False: 
+        popupwin()
+    else:
+        if reading == False:
+            newPSI = True
+            popupwin()
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
@@ -209,7 +227,6 @@ def new_warningSetup(b): #when button clicked
         if reading == False:
             warningSetup = False
             popupwin()
-            buttonHelper("NEW WARNING SETUP")
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
@@ -226,41 +243,6 @@ def buttonHelper(string):
     if Autoscrollvar.get() == 1:
         myLog.yview(END)
 
-
-#def drawGraph(b): #when button clicked
-    """
-    global reading
-    global raw_data
-    if(reading == False):
-        proc_data = AGP.process_data(raw_data)
-        AGP.graph_data(proc_data)
-    """
-    """
-    global root
-    global top
-    top = Toplevel(root)
-    top.geometry("750x250")
-    top.grab_set()
-    top.grab_set()"""
-    """
-    #LGraph = Label(top, text="Time Interval (For raw data, input 0): ")
-    #LGraph.place(x = 10, y = 10)
-    #global inputGraph
-    #inputGraph = Entry(top, width= 25,  font = ("Verdana", 15))
-    #inputGraph.place(x = 375, y = 10)
-    #inputGraph.insert(0, "")
-
-    """
-    """
-     #Create a Button Widget in the Toplevel Window
-     button= Button(top, text="Ok", command=lambda:closeGraphSetup(top), width = 5)
-     button.place(x = 660, y = 140)
-    
-def closeGraphSetup(top):
-    top.destroy()
-    top.grab_release()
-    return"""
-
 #close the popup window
 def close_win(top):
     #arduino setup
@@ -273,17 +255,20 @@ def close_win(top):
     global dName #sensor delay entry box
     global eName #email entry box
     global pName #pressure limit parameter entry box
+    global tName #pressure transducer entry box
 
     global csvnamed #name of CSV file
     global arduino_port # serial port of Arduino
     global sensorDelay # delay in milliseconds
     global emailWarning #actual email
     global paramPLimit #actual parameter
+    global transducerPSI # actual PSI
 
-    global COMset #has the COM been set already or not (because you cannot change the COM once the program has started)
-    global newSD #if we have clicked the newSD button
-    global newFilebool #if we have clicked the newFile button
-    global warningSetup # has the warning system been setup yet
+    global COMset #if the COM been set already or not (because you cannot change the COM once the program has started)
+    global newSD #if we need a new sensor delay
+    global newFilebool #if we need a new file
+    global warningSetup # if the warning system is set up
+    global newPSI # if we neeed a new transducer PSI
 
     if COMset == False:
         arduino_port = inputCOM.get()
@@ -293,6 +278,8 @@ def close_win(top):
         Cover.place(x = 0, y = 825)
     if newSD == True:  
         sensorDelay = dName.get()
+    if newPSI == True:
+        transducerPSI = tName.get()
     if warningSetup == False:
         emailWarning = eName.get()
         paramPLimit = pName.get()
@@ -308,6 +295,8 @@ def close_win(top):
             print(response.body)
             print(response.headers)
             warningSetup = True
+            if(conditions == True):
+                buttonHelper("NEW WARNING SETUP "+emailWarning)
         except Exception as e:
             emailWarning = ""
             messagebox.showinfo('Warning', 'The email you provided is not valid!')
@@ -318,29 +307,41 @@ def close_win(top):
     tempbool1 = (csvnamed!= ""or newFilebool == False)
     tempbool2 = (sensorDelay != "" or newSD == False)
     tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == True)
+    tempbool4 = (transducerPSI != "" or newPSI == False)
 
-    if tempbool and tempbool1 and tempbool2 and tempbool3:
+    if tempbool and tempbool1 and tempbool2 and tempbool3 and tempbool4:
         
         baud = 9600  # arduino uno runs at 9600 baud
         replace = ""
         canCloseBool = True
 
         if COMset == False:
-                global ser
-                ser = serial.Serial(arduino_port, baud)
-                print("Connected to Arduino port:" + arduino_port)
-                COMset = True
+            global ser
+            ser = serial.Serial(arduino_port, baud)
+            print("Connected to Arduino port:" + arduino_port)
+            COMset = True
+            time.sleep(2)
         if newSD == True:
             ser.write(("sd "+str(sensorDelay)).encode())
+            time.sleep(2)
+            print("Sensor Delay set to: "+ str(sensorDelay))
             newSD = False
+            if(conditions == True):
+                buttonHelper("NEW SENSOR DELAY "+str(sensorDelay))
+        if newPSI == True:
+            ser.write(("psi "+str(transducerPSI)).encode())
+            print("max PSI set to: "+ str(transducerPSI))
+            newPSI = False
+            if(conditions == True):
+                buttonHelper("NEW TRANSDUCER PSI "+str(transducerPSI))
         if newFilebool == True:
             if os.path.exists(fName.get()):
                 replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
-        
+
             if replace == "" or replace == "yes":
                 global file
                 file = open(fName.get(), "w") # w for new file and a for add to existing file
-                print("Created file")
+                print("Created file "+csvnamed)
                 newFilebool = False
                 myLog.delete(0, END) # this line and the one below used to be in newFileButton
                 AGP.clear_data()
@@ -354,20 +355,38 @@ def close_win(top):
             conditions = True
             top.destroy()
             top.grab_release()
+            global opened
+            opened = False
 
+def explicitClose():
+    global newFilebool
+    global newSD
+    global warningSetup
+    global newPSI
+    global top
+    if(conditions == True):
+        newFilebool = False
+        newSD = False
+        warningSetup = True
+        newPSI = False
+    top.destroy()
+    top.grab_release()
 
 #open the Popup Dialogue
 def popupwin():
    #Create a Toplevel window
    global root
-   top= Toplevel(root)
+   global top
+   top = Toplevel(root)
    top.geometry("1250x500")
 
    top.grab_set()
+   top.protocol("WM_DELETE_WINDOW", explicitClose)
    global COMset
    global newFilebool
    global newSD
    global warningSetup
+   global newPSI
    
    if COMset == False:
         #Create an Entry Widget in the Toplevel window
@@ -377,7 +396,6 @@ def popupwin():
         inputCOM = Entry(top, width= 40,  font = ("Verdana", 15))
         inputCOM.place(x = 375, y = 10)
         inputCOM.insert(0, "")
-
    if newFilebool == True:
         Lfname = Label(top, text="File Name: ")
         Lfname.place(x = 10, y = 50)
@@ -386,28 +404,34 @@ def popupwin():
         fName.place(x = 375, y = 50)
         fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
 
-   if newSD == True:
-        Delayname = Label(top, text="Sensory Delay in milliseconds: ")
-        Delayname.place(x = 10, y = 90)
-        global dName
-        dName = Entry(top, width= 40,  font = ("Verdana", 15))
-        dName.place(x = 375, y = 90)
-        dName.insert(0, "1000")
-
    if warningSetup == False:
         emailName = Label(top, text="Email (for warnings): ")
-        emailName.place(x = 10, y = 130)
+        emailName.place(x = 10, y = 90)
         global eName
         eName = Entry(top, width= 40,  font = ("Verdana", 15))
-        eName.place(x = 375, y = 130)
+        eName.place(x = 375, y = 90)
         
         paramName = Label(top, text="Pressure Limit in psi (for email warnings): ")
-        paramName.place(x = 10, y = 170)
+        paramName.place(x = 10, y = 130)
         global pName
         pName = Entry(top, width= 40,  font = ("Verdana", 15))
-        pName.place(x = 375, y = 170)
-        
+        pName.place(x = 375, y = 130)
 
+   if newSD == True:
+        Delayname = Label(top, text="Sensor Delay in milliseconds: ")
+        Delayname.place(x = 10, y = 170)
+        global dName
+        dName = Entry(top, width= 40,  font = ("Verdana", 15))
+        dName.place(x = 375, y = 170)
+        dName.insert(0, "1000")
+
+   if newPSI == True:
+        TransdPSI = Label(top, text="Transducer PSI: ")
+        TransdPSI.place(x = 10, y = 210)
+        global tName
+        tName = Entry(top, width= 40,  font = ("Verdana", 15))
+        tName.place(x = 375, y = 210)
+        tName.insert(0, "30")
    #Create a Button Widget in the Toplevel Window
    button= Button(top, text="Ok", command=lambda:close_win(top), width = 10)
    button.place(x = 1100, y = 425)
@@ -418,16 +442,9 @@ def read():
         global reading
         global csvnamed
         global ser
-        #global raw_data
-        global Autoscrollvar
-        global scroll_bar
-        global myLog
-        #print("check1")
         getData = str(ser.readline())
         data = getData[2:-5]
         if reading:
-            global scroll_bar
-            global myLog
 
             # Indices:
             try:
@@ -458,7 +475,6 @@ def read():
             proc_data = AGP.process_data(raw_data)
             AGP.graph_data(proc_data)
             #AGP.canvas.draw() # do not uncomment this*****
-
             buttonHelper(data)
 
 
@@ -471,9 +487,9 @@ def read():
     labelFile = Label(root, text = csvnamed, font = ("Verdana", 20))
     labelFile.place(x = 30, y = 825)
     
-    global sensorDelay
+    #global sensorDelay
     root.grab_set()
-    root.after(sensorDelay, read) #sensordelay + needs to match arduino sensor delay
+    root.after(1000, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
 root.config(menu=my_menu)

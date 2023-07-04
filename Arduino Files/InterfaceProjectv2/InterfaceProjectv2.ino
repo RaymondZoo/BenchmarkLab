@@ -30,7 +30,21 @@ void setup() //setup routine, runs once when system turned on or reset
   lcd.init();
   lcd.backlight();
 
+  //  if (Serial.available()) // if there is data coming
+  // {
+  //   String command = Serial.readStringUntil('\n'); 
+  //   command.trim();
+  //   if (command.substring(0, 2) == "sd")
+  //   {
+  //     sensorreadDelay = command.substring(3).toInt();
+  //   }
 
+  //   if (command.substring(0, 3) == "psi")
+  //   {
+  //     pressuretransducermaxPSI = command.substring(4).toInt();
+  //   }
+
+  // }
   //pinMode(13, OUTPUT); // set the digital pin as output:
   //Serial.print(dataLabel1);
   //Serial.print(",");
@@ -50,26 +64,15 @@ void loop() //loop routine runs over and over again forever
   if (Serial.available()) // if there is data coming
   {
     String command = Serial.readStringUntil('\n'); // read string until meet newline character
-    //Serial.println(command);
     command.trim();
-    /*
-    if (command.equals("recalibrate"))
-    {
-      Serial.println("True");
-    }
-    else{
-      Serial.println("False");
-    }*/
-    //lcd.setCursor(8,1);
-    //lcd.print(command.substring(0,2));
     if (command.substring(0, 2) == "sd")
     {
-      //digitalWrite(13, HIGH); // turn on LED
       sensorreadDelay = command.substring(3).toInt();
-      //lcd.setCursor(8,1);
-      //lcd.print("---");
-      //delay(5000);
-      //digitalWrite(13, LOW); // turn off LED
+    }
+
+    if (command.substring(0, 3) == "psi")
+    {
+      pressuretransducermaxPSI = command.substring(4).toInt();
     }
 
     if (command == "recalibrate")
