@@ -75,6 +75,16 @@ void loop() //loop routine runs over and over again forever
       pressuretransducermaxPSI = command.substring(4).toInt();
     }
 
+    if (command.substring(0, 3) == "psi")
+    {
+      digitalWrite(13, HIGH); // turn on LED
+      pressuretransducermaxPSI = command.substring(3).toInt();
+      //lcd.setCursor(8,1);
+      //lcd.print("---");
+      //delay(5000);
+      digitalWrite(13, LOW); // turn off LED
+    }
+
     if (command == "recalibrate")
     {
       //Serial.println("reached");
