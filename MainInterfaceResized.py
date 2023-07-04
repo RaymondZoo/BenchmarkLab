@@ -99,7 +99,7 @@ frameScroll.config(height = 20, width = 20)
 global scroll_bar
 scroll_bar = Scrollbar(frameScroll)
 global myLog
-myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 15), width= 45, height= 20)
+myLog = Listbox(frameScroll, yscrollcommand = scroll_bar.set,  font = ("Verdana", 10), width= 68, height= 28)
 myLog.pack( side = LEFT, fill = BOTH, expand= True )
 scroll_bar.pack( side = RIGHT, fill = Y, expand= True)
 #myLog.place(x = 0, y= 0)
@@ -143,9 +143,9 @@ def play_click(b): #when button clicked
         global file
 
         if newStart:
-            file.write("Time,PressureIn,PressureOut,PressureDifference\n")  
+            file.write("Time,PressureIn,PressureOut,PressureDifference, Temperature\n")  
             newStart = False
-            myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference")
+            myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference, Temperature")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
@@ -238,10 +238,18 @@ def buttonHelper(string):
     # don't need to open over and over again with open(csvnamed, "a") because this will overwrite
     file.write(str(datetime.datetime.now())+", "+string+" \n") 
     #print(str(datetime.datetime.now())+", "+string+" \n")
-    myLog.insert(END, str(datetime.datetime.now())+", "+string+" \n")
+    myLog.insert(END, str(datetime.datetime.now())[:-7]+", "+string+" \n")
     scroll_bar.config(command = myLog.yview)
     if Autoscrollvar.get() == 1:
         myLog.yview(END)
+
+def loading(root):
+    top = Toplevel(root)
+    top.title('Loading')
+    top.geometry("500x100")
+    Message(top, text="Please be patient", padx=20, pady=20).pack()
+    top.grab_set()
+    top.after(6000, top.destroy)
 
 #close the popup window
 def close_win(top):
@@ -315,15 +323,17 @@ def close_win(top):
         replace = ""
         canCloseBool = True
 
+        #loading(top)
+
         if COMset == False:
             global ser
             ser = serial.Serial(arduino_port, baud)
             print("Connected to Arduino port:" + arduino_port)
             COMset = True
-            time.sleep(2)
+            time.sleep(3)
         if newSD == True:
             ser.write(("sd "+str(sensorDelay)).encode())
-            time.sleep(2)
+            time.sleep(3)
             print("Sensor Delay set to: "+ str(sensorDelay))
             newSD = False
             if(conditions == True):
@@ -357,6 +367,7 @@ def close_win(top):
             top.grab_release()
             global opened
             opened = False
+
 
 def explicitClose():
     global newFilebool
@@ -450,7 +461,8 @@ def read():
             try:
                 PressureIN = data[:data.index(",")]
                 PressureOUT = data[data.index(",")+1 : data.index(",", data.index(",")+1)]
-                PressureDIFF = data[data.index(",", data.index(",")+1)+1:]
+                PressureDIFF = data[data.index(",", data.index(",")+1)+1: data.index(",", data.index(",", data.index(",")+1)+1)]
+
             except:
                 print("Data line is incomplete: "+data)
             else:
