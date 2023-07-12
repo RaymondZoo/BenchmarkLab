@@ -21,9 +21,9 @@ from tkinter import messagebox
 global root
 root = Tk()
 root.title('Flow Loop Testing Interface')
-root.resizable(False, False)
+#root.resizable(False, False)
 #myCanvas = Canvas(root, width = 1300, height = 1100, bg = "White")
-root.geometry("1700x1200")
+root.geometry("1400x1000")
 
 
 #buttons, original size was "height = 4, width = 28,"
@@ -410,7 +410,7 @@ def popupwin():
     global warningSetup
     global newPSI
 
-    top.resizable(False, False)
+    #top.resizable(False, False)
 
     top.columnconfigure(0, weight = 5)
     top.columnconfigure(1, weight = 10)
@@ -422,8 +422,8 @@ def popupwin():
         #lCOM.place(x = 10, y = 10)
         lCOM.grid(row = 0, column = 0, sticky = W, padx = 1, pady = 1)
         global inputCOM
-        inputCOM = Entry(top, width= 40,  font = ("Verdana", 15))
-        inputCOM.grid(row = 0, column = 1, columnspan = 2, sticky = W, padx = 2, pady = 2)
+        inputCOM = Entry(top,  font = ("Verdana", 15))
+        inputCOM.grid(row = 0, column = 1, columnspan = 2, sticky = "WE", padx = 2, pady = 2)
         #inputCOM.place(x = 375, y = 10)
         inputCOM.insert(0, "")
     if newFilebool == True:
@@ -431,34 +431,34 @@ def popupwin():
         #Lfname.place(x = 10, y = 50)
         Lfname.grid(row = 1, column = 0, sticky = W, padx = 1, pady = 1)
         global fName
-        fName = Entry(top, width= 40,  font = ("Verdana", 15))
+        fName = Entry(top, font = ("Verdana", 15))
         #fName.place(x = 375, y = 50)
-        fName.grid(row = 1, column = 1, columnspan = 2, sticky = W, padx = 1, pady = 2)
+        fName.grid(row = 1, column = 1, columnspan = 2, sticky = "WE", padx = 1, pady = 2)
         fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
     if warningSetup == False:
         emailName = Label(top, text="Email (for warnings): ")
         #emailName.place(x = 10, y = 90)
         emailName.grid(row = 2, column = 0, sticky = W, padx = 1, pady = 2)
         global eName
-        eName = Entry(top, width= 40,  font = ("Verdana", 15))
+        eName = Entry(top, font = ("Verdana", 15))
         #eName.place(x = 375, y = 90)
-        eName.grid(row = 2, column = 1, columnspan= 2, sticky = W, padx = 1, pady = 2)
+        eName.grid(row = 2, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
 
         paramName = Label(top, text="Pressure Limit in psi (for email warnings): ")
         #paramName.place(x = 10, y = 130)
         paramName.grid(row = 3, column = 0, sticky = W, padx = 1, pady = 2)
         global pName
-        pName = Entry(top, width= 40,  font = ("Verdana", 15))
+        pName = Entry(top, font = ("Verdana", 15))
         #pName.place(x = 375, y = 130)
-        pName.grid(row = 3, column = 1, columnspan= 2, sticky = W, padx = 1, pady = 2)
+        pName.grid(row = 3, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
     if newSD == True:
         Delayname = Label(top, text="Sensor Delay in milliseconds: ")
         #Delayname.place(x = 10, y = 170)
         Delayname.grid(row = 4, column = 0, sticky = W, padx = 1, pady = 2)
         global dName
-        dName = Entry(top, width= 40,  font = ("Verdana", 15))
+        dName = Entry(top, font = ("Verdana", 15))
         #dName.place(x = 375, y = 170)
-        dName.grid(row = 4, column = 1, columnspan= 2, sticky = W, padx = 1, pady = 2)
+        dName.grid(row = 4, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
         dName.insert(0, "1000")
 
     if newPSI == True:
@@ -466,9 +466,9 @@ def popupwin():
         #TransdPSI.place(x = 10, y = 210)
         TransdPSI.grid(row = 5, column = 0, sticky = W, padx = 1, pady = 2)
         global tName
-        tName = Entry(top, width= 40,  font = ("Verdana", 15))
+        tName = Entry(top, font = ("Verdana", 15))
         #tName.place(x = 375, y = 210)
-        tName.grid(row = 5, column = 1, columnspan= 2, sticky = W, padx = 1, pady = 2)
+        tName.grid(row = 5, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
         tName.insert(0, "30")
     
     for x in range(6, 9):
@@ -532,14 +532,14 @@ def read():
     
     #global sensorDelay
     root.grab_set()
-    root.after(1000, read) #sensordelay + needs to match arduino sensor delay
+    root.after(500, read) #sensordelay + needs to match arduino sensor delay
 
 my_menu = Menu(root)
 root.config(menu=my_menu)
 global csvnamed
 csvnamed = ""
 
-root.after(1000, read)
+root.after(500, read)
 
 root.mainloop()
 
