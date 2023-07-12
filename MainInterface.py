@@ -410,7 +410,7 @@ def popupwin():
     global warningSetup
     global newPSI
 
-    #top.resizable(False, False)
+    top.resizable(False, False)
 
     top.columnconfigure(0, weight = 5)
     top.columnconfigure(1, weight = 10)
