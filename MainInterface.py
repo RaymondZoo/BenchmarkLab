@@ -1,6 +1,7 @@
 import serial
 import datetime
 import time
+from stopwatch import Stopwatch
 import os.path
 import AutomaticGraphingProgram as AGP
 
@@ -8,14 +9,10 @@ import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+import base64
+
 from tkinter import *
 from tkinter import messagebox
-
-#to do now:
-
-#next:
-#backburner:
-#maybe add diagram
 
 #set up frame
 global root
@@ -23,7 +20,7 @@ root = Tk()
 root.title('Flow Loop Testing Interface')
 #root.resizable(False, False)
 #myCanvas = Canvas(root, width = 1300, height = 1100, bg = "White")
-root.geometry("1400x1000")
+root.geometry("1100x600")
 
 
 #buttons, original size was "height = 4, width = 28,"
@@ -35,7 +32,7 @@ Pause = Button(root, bg = "yellow", text = "Pause", command=lambda: pause_click(
 #Pause.pack()
 #Pause.place(x = 950, y = 120)
 
-Stop = Button(root, bg = "red", text = "Stop", command=lambda: stop_click(Stop)) #makes button
+Stop = Button(root, bg = "red", text = "Stop (creates a new CSV heading)", command=lambda: stop_click(Stop)) #makes button
 #Stop.pack()
 #Stop.place(x = 950, y = 230)
 
@@ -51,7 +48,7 @@ newSensorDelay = Button(root, bg = "pink", text = "New Sensor Delay", command=la
 #newSensorDelay.pack()
 #newSensorDelay.place(x = 950, y = 560)
 
-newWarningSetup = Button(root, bg = "teal", text = "New Warning Setup", command=lambda: new_warningSetup(newWarningSetup)) #makes button
+#newWarningSetup = Button(root, bg = "teal", text = "New Warning Setup", command=lambda: new_warningSetup(newWarningSetup)) #makes button
 #newWarningSetup.pack()
 #newWarningSetup.place(x = 950, y = 670)
 
@@ -59,10 +56,9 @@ newTransducer = Button(root, bg = "orange", text = "New Transducer", command=lam
 #newTransducer.pack()
 #newTransducer.place(x = 950, y = 780)
 
-"""
-graphButton = Button(root, height = 4, width = 28, bg  ="teal", text = "Graph", command=lambda: drawGraph(graphButton)) #makes button
-graphButton.pack()
-graphButton.place(x = 675, y = 550)"""
+#sendCSV = Button(root, bg = "gray", text = "Send CSV file to email", command=lambda: send_email(sendCSV))
+
+newPeriodical = Button(root, bg = "gray", text = "New Periodical File interval", command=lambda: new_periodical(newPeriodical)) #makes button
 
 global Autoscrollvar
 Autoscrollvar = IntVar()
@@ -91,9 +87,9 @@ global labelTime
 labelTime = Label(root, text = str(datetime.datetime.now())[:-7], font = ("Verdana", 18))
 labelTime.grid(row = 0, column = 0)
 
-root.columnconfigure(0, weight=20)
+root.columnconfigure(0, weight=22)
 root.columnconfigure(1, weight=1)
-root.columnconfigure(2, weight=4)
+root.columnconfigure(2, weight=2)
 
 for x in range(2, 11):
     root.rowconfigure(x, weight = 80)
@@ -103,14 +99,16 @@ myLog.pack(side = LEFT, fill = BOTH, expand = True )
 scroll_bar.pack(side = RIGHT, fill = Y)
 
 
-Play.grid(row = 2, column = 2, padx = 40, pady = 2, sticky = NSEW )
-Pause.grid(row = 3, column = 2, padx = 40, pady = 2, sticky = NSEW )
-Stop.grid(row = 4, column = 2, padx = 40, pady = 2, sticky = NSEW )
-newFile.grid(row = 5, column = 2, padx = 40, pady = 2, sticky = NSEW )
-recalibrate.grid(row = 6, column = 2, padx = 40, pady = 2, sticky = NSEW )
-newSensorDelay.grid(row = 7, column = 2, padx = 40, pady = 2, sticky = NSEW )
-newWarningSetup.grid(row = 8, column = 2, padx = 40, pady = 2, sticky = NSEW )
-newTransducer.grid(row = 9, column = 2, padx = 40, pady = 2, sticky = NSEW )
+Play.grid(row = 2, column = 2, padx = 50, pady = 2, sticky = NSEW )
+Pause.grid(row = 3, column = 2, padx = 50, pady = 2, sticky = NSEW )
+Stop.grid(row = 4, column = 2, padx = 50, pady = 2, sticky = NSEW )
+newFile.grid(row = 5, column = 2, padx = 50, pady = 2, sticky = NSEW )
+recalibrate.grid(row = 6, column = 2, padx = 50, pady = 2, sticky = NSEW )
+#newWarningSetup.grid(row = 8, column = 2, padx = 40, pady = 2, sticky = NSEW )
+newSensorDelay.grid(row = 7, column = 2, padx = 50, pady = 2, sticky = NSEW )
+newTransducer.grid(row = 8, column = 2, padx = 50, pady = 2, sticky = NSEW )
+newPeriodical.grid(row = 9, column = 2, padx = 50, pady = 2, sticky = NSEW )
+#sendCSV.grid(row = 10, column = 2, padx = 40, pady = 2, sticky = NSEW )
 Autoscroll.grid(row = 9, column = 1, sticky = NW)
 
 global reading
@@ -119,6 +117,7 @@ global newStart
 newStart = True
 global conditions
 conditions = False
+
 global COMset 
 COMset = False
 global sensorDelay
@@ -126,13 +125,19 @@ global newFilebool
 newFilebool = True
 global newSD
 newSD = True
-global warningSetup
-warningSetup = False
-global emailWarning
-global paramPLimit
+#global warningSetup
+#warningSetup = False
+#global emailWarning
+#global paramPLimit
 global newPSI
 newPSI = True
 global transducerPSI
+global periodInterval
+global newPeriod
+newPeriod = True
+
+global stopwatch
+stopwatch = Stopwatch(2)
 
 def play_click(b): #when button clicked
     #if COM or file name not set then don't start
@@ -149,30 +154,45 @@ def play_click(b): #when button clicked
         reading = True
         global myLog
         global file
+        global periodicalFile
+        global stopwatch
 
         if newStart:
-            file.write("Time,PressureIn,PressureOut,PressureDifference,TempIn,TempOut\n")  
+            file.write("Time,PressureIn,PressureOut,PressureDifference,TempIn,TempOut\n") 
+            periodicalFile.write("Time,PressureIn,PressureOut,PressureDifference,TempIn,TempOut\n") 
             newStart = False
             myLog.insert(END, "Time,PressureIn,PressureOut,PressureDifference,Temperature")
             scroll_bar.config(command = myLog.yview)
             if Autoscrollvar.get() == 1:
                 myLog.yview(END)
+            stopwatch.reset()
 
         buttonHelper("START")
+        stopwatch.start()
         
 def pause_click(b): #when button clicked
-    global reading
-    reading = False
-
-    buttonHelper("PAUSE")
+    if conditions == False: 
+        popupwin()
+    else:
+        global reading
+        reading = False
+    
+        buttonHelper("PAUSE")
+        global stopwatch
+        stopwatch.stop()
 
 def stop_click(b): #when button clicked
-    global reading
-    reading = False
+    if conditions == False: 
+        popupwin()
+    else:
+        global reading
+        reading = False
 
-    buttonHelper("STOP")
-    global newStart
-    newStart = True
+        buttonHelper("STOP")
+        global newStart
+        newStart = True
+        global stopwatch
+        stopwatch.stop()
 
 def new_File(b): #when button clicked
     global reading
@@ -225,6 +245,46 @@ def new_transducer(b): #when button clicked
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
 
+def new_periodical(b):
+    global reading
+    global newPeriod
+    global conditions
+    if conditions == False: 
+        popupwin()
+    else:
+        if reading == False:
+            newPeriod = True
+            popupwin()
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
+"""
+def send_email(b): #when button clicked
+    global reading
+    global newPSI
+    global conditions
+    if conditions == False: 
+        popupwin()
+    else:
+        if reading == False:
+            #might need to close the csv file and then reopen it because I don't think it updates well enough that I can just pause in the middle like that
+            message = Mail(
+                        from_email='benchmarklabbot1@gmail.com',
+                        to_emails = emailWarning,
+                        subject= csvnamed + 'CSV File',
+                        html_content='Here is your CSV file')
+            try:
+                sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+                response = sg.send(message)
+                print(response.status_code)
+                print(response.body)
+                print(response.headers)
+            except Exception as e:
+                print(e) 
+        else:
+            messagebox.showinfo('Warning', 'You must pause or stop the program')
+"""
+
+"""
 def new_warningSetup(b): #when button clicked
     global reading
     global warningSetup
@@ -237,14 +297,22 @@ def new_warningSetup(b): #when button clicked
             popupwin()
         else:
             messagebox.showinfo('Warning', 'You must pause or stop the program')
-
+"""
 def buttonHelper(string):
     global myLog
     global Autoscrollvar
     global scroll_bar
     global file
+    global stopwatch
+    global periodInterval
+
+    #print(stopwatch.duration)
+    if stopwatch.duration/60 >= float(periodInterval):
+        periodicalFile.write(str(datetime.datetime.now())[0:10]+","+str(datetime.datetime.now())[11:]+","+string+" \n") 
+        stopwatch.restart()
+
     # don't need to open over and over again with open(csvnamed, "a") because this will overwrite
-    file.write(str(datetime.datetime.now())+", "+string+" \n") 
+    file.write(str(datetime.datetime.now())[0:10]+","+str(datetime.datetime.now())[11:]+","+string+" \n") 
     #print(str(datetime.datetime.now())+", "+string+" \n")
     myLog.insert(END, str(datetime.datetime.now())[:-7]+", "+string+" \n")
     scroll_bar.config(command = myLog.yview)
@@ -253,7 +321,6 @@ def buttonHelper(string):
 
 def removeWidget(widget):
     widget.destroy()
-
 
 #close the popup window
 def close_win(top):
@@ -274,22 +341,25 @@ def close_win(top):
     global inputCOM #COM entry box
     global fName #fileName entry box
     global dName #sensor delay entry box
-    global eName #email entry box
-    global pName #pressure limit parameter entry box
+    #global eName #email entry box
+    #global pName #pressure limit parameter entry box
     global tName #pressure transducer entry box
+    global perName #periodical interval name
 
     global csvnamed #name of CSV file
     global arduino_port # serial port of Arduino
     global sensorDelay # delay in milliseconds
-    global emailWarning #actual email
-    global paramPLimit #actual parameter
+    #global emailWarning #actual email
+    #global paramPLimit #actual parameter
     global transducerPSI # actual PSI
+    global periodInterval # actual interval
 
     global COMset #if the COM been set already or not (because you cannot change the COM once the program has started)
     global newSD #if we need a new sensor delay
     global newFilebool #if we need a new file
-    global warningSetup # if the warning system is set up
+    #global warningSetup # if the warning system is set up
     global newPSI # if we neeed a new transducer PSI
+    global newPeriod # if we neeed a new period interval
 
     if COMset == False:
         arduino_port = inputCOM.get()
@@ -301,6 +371,9 @@ def close_win(top):
         sensorDelay = dName.get()
     if newPSI == True:
         transducerPSI = tName.get()
+    if newPeriod == True:
+        periodInterval = perName.get()
+        """
     if warningSetup == False:
         emailWarning = eName.get()
         paramPLimit = pName.get()
@@ -321,16 +394,17 @@ def close_win(top):
         except Exception as e:
             emailWarning = ""
             messagebox.showinfo('Warning', 'The email you provided is not valid!')
-            print(e) #not sure how this part works
+            print(e) #not sure how this part works"""
 
     #this checks that the variable either has a value or isn't needed
     tempbool = (arduino_port != "" or COMset == True)
     tempbool1 = (csvnamed!= ""or newFilebool == False)
     tempbool2 = ((sensorDelay != "") or newSD == False)
-    tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == True)
+    #tempbool3 = ((emailWarning != "" and paramPLimit != "") or warningSetup == True)#
     tempbool4 = ((transducerPSI != "") or newPSI == False)
+    tempbool5 = ((periodInterval!= "") or newPeriod == False)
 
-    if tempbool and tempbool1 and tempbool2 and tempbool3 and tempbool4:
+    if tempbool and tempbool1 and tempbool2 and tempbool4 and tempbool5: #and tempbool3
 
         baud = 9600  # arduino uno runs at 9600 baud
         replace = ""
@@ -363,6 +437,8 @@ def close_win(top):
                 global file
                 file = open(fName.get(), "w") # w for new file and a for add to existing file
                 #print("Created file "+csvnamed)
+                global periodicalFile
+                periodicalFile = open(fName.get()[:-4]+"_periodical"+".csv", "w")
                 newFilebool = False
                 myLog.delete(0, END) # this line and the one below used to be in newFileButton
                 AGP.clear_data()
@@ -383,14 +459,16 @@ def close_win(top):
 def explicitClose():
     global newFilebool
     global newSD
-    global warningSetup
+    #global warningSetup
     global newPSI
+    global newPeriod
     global top
     if(conditions == True):
         newFilebool = False
         newSD = False
-        warningSetup = True
+        #warningSetup = True
         newPSI = False
+        newPeriod = False
     top.destroy()
     top.grab_release()
 
@@ -400,15 +478,16 @@ def popupwin():
     global root
     global top
     top = Toplevel(root)
-    top.geometry("1250x500")
+    top.geometry("1100x500")
 
     top.grab_set()
     top.protocol("WM_DELETE_WINDOW", explicitClose)
     global COMset
     global newFilebool
     global newSD
-    global warningSetup
+    #global warningSetup
     global newPSI
+    global newPeriod
 
     #top.resizable(False, False)
 
@@ -435,7 +514,7 @@ def popupwin():
         #fName.place(x = 375, y = 50)
         fName.grid(row = 1, column = 1, columnspan = 2, sticky = "WE", padx = 1, pady = 2)
         fName.insert(0, str(datetime.datetime.now())[0:10]+"analog-data.csv")
-    if warningSetup == False:
+    """if warningSetup == False:
         emailName = Label(top, text="Email (for warnings): ")
         #emailName.place(x = 10, y = 90)
         emailName.grid(row = 2, column = 0, sticky = W, padx = 1, pady = 2)
@@ -450,7 +529,7 @@ def popupwin():
         global pName
         pName = Entry(top, font = ("Verdana", 15))
         #pName.place(x = 375, y = 130)
-        pName.grid(row = 3, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
+        pName.grid(row = 3, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)"""
     if newSD == True:
         Delayname = Label(top, text="Sensor Delay in milliseconds: ")
         #Delayname.place(x = 10, y = 170)
@@ -460,7 +539,6 @@ def popupwin():
         #dName.place(x = 375, y = 170)
         dName.grid(row = 4, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
         dName.insert(0, "1000")
-
     if newPSI == True:
         TransdPSI = Label(top, text="Transducer PSI: ")
         #TransdPSI.place(x = 10, y = 210)
@@ -470,8 +548,18 @@ def popupwin():
         #tName.place(x = 375, y = 210)
         tName.grid(row = 5, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
         tName.insert(0, "30")
+    if newPeriod == True:
+        periodLabel = Label(top, text="Interval (in minutes) for Periodical File: ")
+        #TransdPSI.place(x = 10, y = 210)
+        periodLabel.grid(row = 6, column = 0, sticky = W, padx = 1, pady = 2)
+        global perName
+        perName = Entry(top, font = ("Verdana", 15))
+        #tName.place(x = 375, y = 210)
+        perName.grid(row = 6, column = 1, columnspan= 2, sticky = "WE", padx = 1, pady = 2)
+        perFileNameLabel = Label(top, text="Periodical File will be named [Your File Name before \".csv\"]_periodical.csv", font = ("Verdana", 5))
+        perFileNameLabel.grid(row = 7, column = 1, columnspan= 2, sticky = "W", padx = 1, pady = 2)
     
-    for x in range(6, 9):
+    for x in range(8, 9):
         top.rowconfigure(x, weight = 1)
 
     #Create a Button Widget in the Toplevel Window
@@ -498,6 +586,7 @@ def read():
             except:
                 print("Data line is incomplete: "+data)
             else:
+                """
                 #send email warning
                 if float(PressureDIFF)>float(paramPLimit):
                     message = Mail(
@@ -512,13 +601,18 @@ def read():
                         print(response.body)
                         print(response.headers)
                     except Exception as e:
-                        print(e) 
+                        print(e) """
 
             #graphing data
-            raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n")
-            proc_data = AGP.process_data(raw_data)
-            AGP.graph_data(proc_data)
-            #AGP.canvas.draw() # do not uncomment this*****
+            """
+            raw_data1 = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n", 1) # can put all raw data in one return potentially so its only one parse
+            proc_data1 = AGP.process_data(raw_data1)
+            AGP.graph_data(proc_data1, 1)"""
+
+            for x in range(1, 6):
+                graphingHelper(data, x)
+
+            #AGP.canvas.draw() # do not uncomment this****
             buttonHelper(data)
 
 
@@ -533,6 +627,13 @@ def read():
     #global sensorDelay
     root.grab_set()
     root.after(500, read) #sensordelay + needs to match arduino sensor delay
+
+
+def graphingHelper(data, x):
+    raw_data = AGP.read_line_inputs(str(datetime.datetime.now())+","+ data + "\n", x)
+    proc_data = AGP.process_data(raw_data)
+    AGP.graph_data(proc_data, x)
+
 
 my_menu = Menu(root)
 root.config(menu=my_menu)

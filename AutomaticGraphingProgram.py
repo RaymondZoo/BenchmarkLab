@@ -1,27 +1,66 @@
 from ast import Constant
 from datetime import datetime
 from tokenize import String
-from drawnow import *
-from matplotlib.figure import Figure
 import matplotlib as mpl
 mpl.use("Qt5Agg")
+from matplotlib.figure import Figure
+from drawnow import *
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import time
 
 # Variables, must only be altered by reading line inputs
 raw_time = []
 press = []
 fig, ax = plt.subplots()
+ax.set_title("Inlet Pressure")
+fig.show()
+
+raw_time2 = []
+press2 = []
+fig2, ax2 = plt.subplots()
+ax2.set_title("Outlet Pressure")
+fig2.show()
+
+raw_time3 = []
+press3 = []
+fig3, ax3 = plt.subplots()
+ax3.set_title("Differential Pressure")
+fig3.show()
+
+raw_time4 = []
+press4 = []
+fig4, ax4 = plt.subplots()
+ax4.set_title("Inlet Temperature")
+fig4.show()
+
+raw_time5 = []
+press5 = []
+fig5, ax5 = plt.subplots()
+ax5.set_title("Outlet Temperature")
+fig5.show()
 #fig = plt.figure()
 #fig = Figure(figsize = (5, 4), dpi = 200)
 #ax = fig.add_subplot()
 
+# need to label each figure
+figuredict = {
+  1: [fig, raw_time, press, ax, "Inlet Pressure", 'Pressure (PSI)'],
+  2: [fig2, raw_time2, press2, ax2, "Outlet Pressure", 'Pressure (PSI)'],
+  3: [fig3, raw_time3, press3, ax3, "Differential Pressure", 'Pressure (PSI)'],
+  4: [fig4, raw_time4, press4, ax4, "Inlet Temperature", 'Temperature (Celsius)'],
+  5: [fig5, raw_time5, press5, ax5, "Outlet Temperature", 'Temperature (Celsius)']
+}
+
 # ***** READING LINE INPUTS *****
-def read_line_inputs(str_read):
+def read_line_inputs(str_read, x):
     # Prerequisite: ONLY PUT IN DATA THAT HAS NUMBERS
     col = 0
     new_data = True
+    datatemp = figuredict[x][2]
+    raw_timetemp = figuredict[x][1]
+    #print(str_read)
     
     # Takes a line from a CSV input, reads it
     # Appends the data to the proper list
@@ -35,21 +74,24 @@ def read_line_inputs(str_read):
             if col == 0:
                 if new_data:
                     # New time, append to raw_time
-                    raw_time.append(character)
+                    raw_timetemp.append(character)
                     new_data = False
                 else:
                     # Adding to current time string
-                    raw_time[len(raw_time) - 1] += character
-            elif col == 3:
+                    raw_timetemp[len(raw_timetemp) - 1] += character
+            elif col == x:
                 if new_data:
                     # New pressure data
-                    press.append(character)
+                    datatemp.append(character)
                     new_data = False
                 else:
                     # Adding to current data string
-                    press[len(raw_time) - 1] += character
-    press[len(raw_time) - 1] = float(press[len(raw_time) - 1])
-    return [raw_time, press]
+                    datatemp[len(raw_timetemp) - 1] += character
+    
+    datatemp[len(raw_timetemp) - 1] = float(datatemp[len(raw_timetemp) - 1])
+    #print(x)
+    #print(presstemp)
+    return [raw_timetemp, datatemp]
 
 # ***** READING CSV FILE *****
 def read_file():
@@ -135,7 +177,7 @@ def get_avg_data(unscaled_data, avg_duration):
     return [avg_time, avg_press]
 
 # ***** GRAPHING *****
-def graph_data(proc_data):
+def graph_data(proc_data, x):
     # Change the units of the time automatically
     unit_in_ms = 0
     unit_name = "ms"
@@ -152,18 +194,24 @@ def graph_data(proc_data):
         unit_name = "s"
         unit_in_ms = 1000
     proc_data = change_graph_units(proc_data, unit_in_ms)
+
+    axtemp = figuredict[x][3]
+    figtemp = figuredict[x][0]
     
-    ax.clear()
-    ax.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
+    axtemp.clear()
+    axtemp.plot(proc_data[0], proc_data[1], color = '#0d9eb7', marker = 'o', label = "Control")
     
-    ax.set_xlabel('Time (' + unit_name + ')')
-    ax.set_ylabel('Pressure (psi)')
-    ax.set_xlim(0)
-    ax.grid(True)
+    axtemp.set_title(figuredict[x][4])
+    axtemp.set_xlabel('Time (' + unit_name + ')')
+    axtemp.set_ylabel(figuredict[x][5])
+    axtemp.set_xlim(0)
+    axtemp.grid(True)
     
-    drawnow
+    #drawnow
     #plt.show()
-    plt.pause(.000001)
+    #plt.pause(.000001)
+    figtemp.canvas.draw_idle()
+    figtemp.canvas.flush_events()
 
 def change_graph_units(proc_data, unit_in_ms):
     if unit_in_ms != 0:
@@ -172,11 +220,10 @@ def change_graph_units(proc_data, unit_in_ms):
     return proc_data
 
 def clear_data():
-    ax.clear()
-    global raw_time
-    raw_time = []
-    global press
-    press = []
+    for x in range(1, 6):
+        figuredict[x][3].clear()
+        figuredict[x][1] = []
+        figuredict[x][2] = []
 
 #FOR TESTING 
 #raw_data = read_file()

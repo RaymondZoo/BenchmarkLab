@@ -16,8 +16,8 @@ float pressureOutValue = 0; //variable to store the value coming from the pressu
 float pressureDifference = 0; //variable to store the value coming from the pressure transducer
 
 //pressure calibration
-float pressureZeroI;
-float pressureZeroO;
+float pressureZeroI = pressureZero;
+float pressureZeroO = pressureZero;
 
 //LCD setup
 const LiquidCrystal_I2C lcd(0x27, 16, 2); //sets the LCD I2C communication address; format(address, columns, rows)
@@ -49,8 +49,8 @@ void setup() //setup routine, runs once when system turned on or reset
 
 void loop() //loop routine runs over and over again forever
 {
-  float singleIN = analogRead(pressureIn);
-  float singleOUT = analogRead(pressureOut);
+  float singleIN = analogRead(pressureIn); // raw analog value
+  float singleOUT = analogRead(pressureOut); //raw analog value
   if (Serial.available()) // if there is data coming
   {
     String command = Serial.readStringUntil('\n'); // read string until meet newline character
@@ -65,14 +65,14 @@ void loop() //loop routine runs over and over again forever
     }
     if (command == "recalibrate")
     {
-      //Serial.println("reached");
-      //digitalWrite(13, HIGH); // turn on LED
       pressureZeroI = singleIN;
       pressureZeroO = singleOUT;
-      //delay(5000);
-      //digitalWrite(13, LOW); // turn off LED
     }
   }
+  //singleIN is the raw analog value for pressure in
+  //singleOUT is the raw analog value for pressure out
+  //pressureZeroI and pressureZeroO start at 102.4; //analog reading of pressure transducer at 0psi, should be 102.4 from formula conversion
+  //pressureMax = 921.6; //analog reading of pressure transducer at customized max psi (ex. 30 or 100), should be 921.6 from formula conversion
   pressureInValue = ((singleIN - pressureZeroI) * pressuretransducermaxPSI) / (pressureMax - pressureZeroI); //conversion equation to convert analog reading to psi
   pressureOutValue = ((singleOUT - pressureZeroO) * pressuretransducermaxPSI) / (pressureMax - pressureZeroO); //conversion equation to convert analog reading to psi
   pressureDifference = pressureOutValue - pressureInValue;
