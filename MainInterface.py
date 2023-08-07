@@ -429,6 +429,8 @@ def close_win(top):
             newPSI = False
             if(conditions == True):
                 buttonHelper("NEW TRANSDUCER PSI "+str(transducerPSI))
+        if newPeriod == True:
+            newPeriod = False
         if newFilebool == True:
             if os.path.exists(fName.get()):
                 replace = messagebox.askquestion('Warning', "\""+fName.get()+"\" already exists. Do you want to replace it?")
